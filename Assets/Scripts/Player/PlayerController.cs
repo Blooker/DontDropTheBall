@@ -10,7 +10,7 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private float maxJumps = 2;
 
     [Header("Ground Check")]
-    [SerializeField] private float grCheckRadius;
+    [SerializeField] private /*float grCheckRadius*/ Vector2 grCheckScale;
     [SerializeField] private float grCheckDist, grCheckMoveOffsetX;
     [SerializeField] private LayerMask whatIsGround;
 
@@ -194,14 +194,15 @@ public class PlayerController : MonoBehaviour {
     }
 
     bool CheckGround () {
-        Vector2 circleCastOrigin;
-        if (moveInputX > 0) {
-            circleCastOrigin = new Vector2(transform.position.x - grCheckOffsetX, transform.position.y);
-        } else {
-            circleCastOrigin = new Vector2(transform.position.x + grCheckOffsetX, transform.position.y);
-        }
+        //Vector2 circleCastOrigin;
+        //if (moveInputX > 0) {
+        //    circleCastOrigin = new Vector2(transform.position.x - grCheckOffsetX, transform.position.y);
+        //} else {
+        //    circleCastOrigin = new Vector2(transform.position.x + grCheckOffsetX, transform.position.y);
+        //}
 
-        bool result = (bool)Physics2D.CircleCast(circleCastOrigin, grCheckRadius, Vector2.down, grCheckDist, whatIsGround);
+        //bool result = (bool)Physics2D.CircleCast(circleCastOrigin, grCheckRadius, Vector2.down, grCheckDist, whatIsGround);
+        bool result = (bool)Physics2D.BoxCast(transform.position, grCheckScale, 0, Vector2.down, grCheckDist, whatIsGround);
         return result;
     }
 
@@ -235,7 +236,8 @@ public class PlayerController : MonoBehaviour {
 
     void OnDrawGizmosSelected() {
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireSphere(new Vector3(moveInputX > 0 ? transform.position.x - grCheckOffsetX : transform.position.x + grCheckOffsetX, transform.position.y - grCheckDist), grCheckRadius);
+        //Gizmos.DrawWireSphere(new Vector3(moveInputX > 0 ? transform.position.x - grCheckOffsetX : transform.position.x + grCheckOffsetX, transform.position.y - grCheckDist), grCheckRadius);
+        Gizmos.DrawCube(transform.position + (Vector3.down * grCheckDist), grCheckScale);
 
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(new Vector3(transform.position.x - wallCheckDist, transform.position.y + wallCheckOffsetY), wallCheckRadius);

@@ -42,6 +42,8 @@ public class PlayerAnim : MonoBehaviour {
             if (jumpSmokeTimer <= 0) {
                 jumpSmoke.Stop();
                 Destroy(jumpSmoke.gameObject, 1f);
+
+                jumpSmoke = null;
             }
         }
     }
@@ -61,6 +63,13 @@ public class PlayerAnim : MonoBehaviour {
     }
 
     public void SpawnJumpSmoke () {
+        if (jumpSmoke != null) {
+            jumpSmoke.Stop();
+            Destroy(jumpSmoke.gameObject, 1f);
+
+            jumpSmoke = null;
+        }
+
         jumpSmoke = Instantiate(jumpSmokePfb, jumpSmokeOrigin.position, Quaternion.identity).GetComponent<ParticleSystem>();
         jumpSmokeTimer = jumpSmokeLength;
     }
