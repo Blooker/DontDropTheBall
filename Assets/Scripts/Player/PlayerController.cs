@@ -68,7 +68,6 @@ public class PlayerController : MonoBehaviour {
         }
 
         isGrounded = circleCast;
-
     }
 
     // Update is called once per frame
@@ -86,7 +85,7 @@ public class PlayerController : MonoBehaviour {
 
         if (dshLerpValue < 0.95f) {
             transform.position = Vector3.Lerp(dshStart, dshEnd, dshLerpValue);
-            dshLerpValue += dshCurrentSpeed;
+            dshLerpValue += dshCurrentSpeed * Time.deltaTime;
         } else if (isDashing) {
             EndDash(dshEnd);
         }
@@ -148,7 +147,7 @@ public class PlayerController : MonoBehaviour {
             grCheckOffsetX = 0;
         }
 
-        rb.velocity = new Vector2(moveInputX * speed, rb.velocity.y);
+        rb.velocity = new Vector2(moveInputX * speed * Time.deltaTime, rb.velocity.y);
 
         if (!playerAnim.IsFacingRight() && moveInputX > 0) {
             playerAnim.LookRight();

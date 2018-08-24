@@ -9,17 +9,22 @@ public class VideoSettings : MonoBehaviour {
     [SerializeField] private Camera pixelRenderCam;
     [SerializeField] private RawImage canvasImage;
 
+    [SerializeField] private int frameRate;
+
 	// Use this for initialization
 	void Start () {
-        Application.targetFrameRate = Screen.currentResolution.refreshRate;
-        
+        QualitySettings.vSyncCount = 0;
+        Application.targetFrameRate = 60;
+       
+        //Application.targetFrameRate = 60;
+
         SetResolution(Screen.width, Screen.height);
 	}
 	
 	// Update is called once per frame
 	void Update () {
-		
-	}
+        Application.targetFrameRate = frameRate;
+    }
 
     void SetResolution (int width, int height) {
         if (pixelRenderCam.targetTexture != null) {
