@@ -20,8 +20,10 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private float wallCheckOffsetY;
     [SerializeField] private LayerMask whatIsWall;
 
-    [Header("Wall Sliding")]
-    [SerializeField] private float wallFallSpeedDecrease = 10f;
+    [Header("Wall Jump/Slide")]
+    [SerializeField] private float wFallSpeedDecrease = 10f;
+    [SerializeField] private float wJumpUpForce;
+    [SerializeField] private float wJumpMoveSleepAmount = 0.2f;
 
     private float moveInputX;
     private float numJumps;
@@ -30,7 +32,10 @@ public class PlayerController : MonoBehaviour {
 
     private float grCheckOffsetX = 0;
 
-    private bool isGrounded = false, isLanded = false, isWallSliding = false;
+    private bool isGrounded = false, isLanded = false;
+    private bool isWallSliding = false, wallOnRightSide = false;
+
+    private float wJumpMoveSleepTimer = 0;
 
     private PlayerAnim playerAnim;
     private Rigidbody2D rb;
@@ -62,36 +67,62 @@ public class PlayerController : MonoBehaviour {
             Land();
 
         if (isWallSliding && rb.velocity.y <= 0) {
-            rb.AddForce(Vector2.up * wallFallSpeedDecrease);
+            rb.AddForce(Vector2.up * wFallSpeedDecrease);
+        }
+
+        if (wJumpMoveSleepTimer > 0) {
+            wJumpMoveSleepTimer -= Time.deltaTime;
         }
     }
 
     public void Move(float horiz) {
         float moveDelta = 0;
 
-        if (!isGrounded) {
-            moveDelta = acceleration / 2;
-        } else if (moveInputX > 0 && horiz <= 0 || moveInputX <= 0 && horiz > 0) {
-            moveDelta = acceleration * 2;
-        } else {
-            moveDelta = acceleration;
-        }
+        if (wJumpMoveSleepTimer > 0) {
+            horiz = 0;
 
-        GameObject wallTouchedRight = CheckWallRight();
-        GameObject wallTouchedLeft = CheckWallLeft();
-
-        if (wallTouchedRight != null && horiz > 0) {
-            moveInputX = 0;
-            if (!isGrounded)
-                StartWallSlide(true, wallTouchedRight);
-        } else if (wallTouchedLeft != null && horiz < 0) {
-            moveInputX = 0;
-            if (!isGrounded)
-                StartWallSlide(false, wallTouchedLeft);
+            if (wallOnRightSide) {
+                moveInputX = -1;
+            } else {
+                moveInputX = 1;
+            }
         } else {
-            moveInputX = Mathf.MoveTowards(moveInputX, horiz, moveDelta);
-            if (isWallSliding)
-                EndWallSlide();
+            if (!isGrounded) {
+                moveDelta = acceleration / 2;
+            }
+            else if (moveInputX > 0 && horiz <= 0 || moveInputX <= 0 && horiz > 0) {
+                moveDelta = acceleration * 2;
+            }
+            else {
+                moveDelta = acceleration;
+            }
+
+            GameObject wallTouchedRight = CheckWallRight();
+            GameObject wallTouchedLeft = CheckWallLeft();
+
+            if (wallTouchedRight != null && horiz > 0) {
+                moveInputX = 0;
+                if (!isGrounded) {
+                    StartWallSlide(true, wallTouchedRight);
+                }
+                else if (isWallSliding) {
+                    EndWallSlide();
+                }
+            }
+            else if (wallTouchedLeft != null && horiz < 0) {
+                moveInputX = 0;
+                if (!isGrounded) {
+                    StartWallSlide(false, wallTouchedLeft);
+                }
+                else if (isWallSliding) {
+                    EndWallSlide();
+                }
+            }
+            else {
+                moveInputX = Mathf.MoveTowards(moveInputX, horiz, moveDelta);
+                if (isWallSliding)
+                    EndWallSlide();
+            }
         }
 
         if (moveInputX != 0) {
@@ -110,6 +141,14 @@ public class PlayerController : MonoBehaviour {
     }
 
     public void Jump() {
+        if (isWallSliding) {
+            WallJump();
+        } else {
+            GroundJump();
+        }
+    }
+
+    private void GroundJump () {
         if (isGrounded)
             numJumps += 1;
 
@@ -117,6 +156,12 @@ public class PlayerController : MonoBehaviour {
             rb.velocity = Vector2.up * jumpForce;
             numJumps -= 1;
         }
+    }
+
+    private void WallJump () {
+        rb.velocity = Vector2.up * wJumpUpForce;
+        wJumpMoveSleepTimer = wJumpMoveSleepAmount;
+        EndWallSlide();
     }
 
     // Call when the player has just landed on the ground
@@ -129,6 +174,7 @@ public class PlayerController : MonoBehaviour {
 
     void StartWallSlide(bool wallOnRight, GameObject wall) {
         isWallSliding = true;
+        wallOnRightSide = wallOnRight;
 
         Vector2 currentPos = transform.position;
         if (wallOnRight) {
