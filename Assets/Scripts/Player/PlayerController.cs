@@ -81,6 +81,7 @@ public class PlayerController : MonoBehaviour {
 
         if (wJumpMoveSleepTimer > 0) {
             wJumpMoveSleepTimer -= Time.deltaTime;
+            Debug.Log(wJumpMoveSleepTimer);
         }
 
         if (dshLerpValue < 0.95f) {
@@ -94,6 +95,8 @@ public class PlayerController : MonoBehaviour {
     public void Move(float horiz) {
         float moveDelta = 0;
 
+        float _acceleration = acceleration * Time.deltaTime;
+
         if (wJumpMoveSleepTimer > 0) {
             horiz = 0;
 
@@ -104,13 +107,13 @@ public class PlayerController : MonoBehaviour {
             }
         } else {
             if (!isGrounded) {
-                moveDelta = acceleration / 2;
+                moveDelta = _acceleration / 2;
             }
             else if (moveInputX > 0 && horiz <= 0 || moveInputX <= 0 && horiz > 0) {
-                moveDelta = acceleration * 2;
+                moveDelta = _acceleration * 2;
             }
             else {
-                moveDelta = acceleration;
+                moveDelta = _acceleration;
             }
 
             GameObject wallTouchedRight = CheckWallRight();
@@ -147,7 +150,7 @@ public class PlayerController : MonoBehaviour {
             grCheckOffsetX = 0;
         }
 
-        rb.velocity = new Vector2(moveInputX * speed * Time.deltaTime, rb.velocity.y);
+        rb.velocity = new Vector2(moveInputX * speed, rb.velocity.y);
 
         if (!playerAnim.IsFacingRight() && moveInputX > 0) {
             playerAnim.LookRight();
