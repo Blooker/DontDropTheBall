@@ -91,7 +91,7 @@ public class PlayerInput : MonoBehaviour {
         }
         else {
             playerController.Move(horizMove);
-            if (Input.GetKeyDown(KeyCode.LeftShift)) {
+            if ((horizMove != 0 || vertMove != 0) && Input.GetKeyDown(KeyCode.LeftShift)) {
                 playerController.StartDash(horizMove, vertMove);
             }
         }

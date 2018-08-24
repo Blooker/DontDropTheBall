@@ -28,6 +28,7 @@ public class PlayerController : MonoBehaviour {
     [Header("Dash")]
     [SerializeField] private float dshSpeed = 0.1f;
     [SerializeField] private float dshDistance = 10f;
+    [SerializeField] private LayerMask whatStopsDash;
 
     private float moveInputX;
     private float numJumps;
@@ -39,7 +40,7 @@ public class PlayerController : MonoBehaviour {
     private float wJumpMoveSleepTimer = 0;
 
     private Vector3 dshStart, dshEnd;
-    private float dshLerpValue = 1;
+    private float dshLerpValue = 1, dshCurrentSpeed;
 
     private bool isGrounded = false, isLanded = false;
     private bool isWallSliding = false, wallOnRightSide = false;
@@ -67,6 +68,7 @@ public class PlayerController : MonoBehaviour {
         }
 
         isGrounded = circleCast;
+
     }
 
     // Update is called once per frame
@@ -82,12 +84,11 @@ public class PlayerController : MonoBehaviour {
             wJumpMoveSleepTimer -= Time.deltaTime;
         }
 
-        if (dshLerpValue < 1) {
+        if (dshLerpValue < 0.95f) {
             transform.position = Vector3.Lerp(dshStart, dshEnd, dshLerpValue);
-
-            dshLerpValue += dshSpeed;
+            dshLerpValue += dshCurrentSpeed;
         } else if (isDashing) {
-            EndDash();
+            EndDash(dshEnd);
         }
     }
 
@@ -164,11 +165,45 @@ public class PlayerController : MonoBehaviour {
         }        
     }
 
-    public void StartDash (float horiz, float vert) {
+    public void StartDash(float horiz, float vert) {
+        if (isGrounded && vert < 0)
+            vert = 0;
+
         Vector3 dashDir = new Vector2(horiz, vert).normalized;
 
+        if (dashDir.magnitude == 0)
+            return;
+
+        RaycastHit2D[] hits = new RaycastHit2D[1];
+
+        ContactFilter2D filter = new ContactFilter2D();
+        filter.SetLayerMask(whatStopsDash);
+
         dshStart = transform.position;
-        dshEnd = transform.position + dashDir * dshDistance;
+
+        if (Physics2D.BoxCast(transform.position, transform.localScale, 0, dashDir, filter, hits, dshDistance) > 0) {
+            //Debug.Log("Obstacle found");
+            dshEnd = hits[0].point;
+
+            if (dashDir.y == 0) {
+                dshEnd.y = transform.position.y;
+            }
+
+            if (dashDir.x == 0) {
+                dshEnd.x = transform.position.x;
+            }
+
+            float startToEndDist = Vector3.Distance(dshStart, dshEnd);
+            if (startToEndDist < 3.5f) {
+                EndDash(dshEnd);
+                return;
+            }
+
+            dshCurrentSpeed = dshSpeed / (startToEndDist / dshDistance);
+        } else {
+            dshEnd = transform.position + dashDir * dshDistance;
+            dshCurrentSpeed = dshSpeed;
+        }
 
         rb.simulated = false;
         dshLerpValue = 0;
@@ -221,12 +256,51 @@ public class PlayerController : MonoBehaviour {
         playerAnim.EndWallSlide();
     }
 
-    void EndDash () {
-        transform.position = dshEnd;
+    void EndDash (Vector3 endPos) {
+
+        transform.position = GetDashEndPlayerPos(endPos);
+
+        dshLerpValue = 1;
+
         rb.simulated = true;
 
         rb.velocity = Vector3.zero;
         isDashing = false;
+    }
+
+    // Gets the correct dash end position so that the player doesn't clip into terrain
+    Vector3 GetDashEndPlayerPos (Vector3 endPos) {
+        Vector3 result;
+
+        if (dshCurrentSpeed != dshSpeed) {
+            Vector3 startEndDir = (dshEnd - dshStart).normalized;
+            Debug.Log(startEndDir);
+
+            Vector3 endOffset = Vector3.zero;
+            if (startEndDir.y > 0.75f && startEndDir.x > -0.75f && startEndDir.x < 0.75f) {
+                // up code
+                endOffset = Vector3.down * (transform.localScale.y / 2f);
+            }
+            else if (startEndDir.x < -0.75f && startEndDir.y > -0.75f && startEndDir.y < 0.75f) {
+                // left code
+                endOffset = Vector3.right * (transform.localScale.x / 2f);
+            }
+            else if (startEndDir.y < -0.75f && startEndDir.x > -0.75f && startEndDir.x < 0.75f) {
+                // down code
+                endOffset = Vector3.up * (transform.localScale.y / 2f);
+            }
+            else if (startEndDir.x > 0.75f && startEndDir.y > -0.75f && startEndDir.y < 0.75f) {
+                // right code
+                endOffset = Vector3.left * (transform.localScale.x / 2f);
+            }
+
+            result = endPos + endOffset;
+        }
+        else {
+            result = endPos;
+        }
+
+        return result;
     }
 
     bool CheckGround () {
@@ -271,12 +345,22 @@ public class PlayerController : MonoBehaviour {
     }
 
     void OnDrawGizmosSelected() {
+        // Ground check
         Gizmos.color = Color.yellow;
         //Gizmos.DrawWireSphere(new Vector3(moveInputX > 0 ? transform.position.x - grCheckOffsetX : transform.position.x + grCheckOffsetX, transform.position.y - grCheckDist), grCheckRadius);
         Gizmos.DrawCube(transform.position + (Vector3.down * grCheckDist), grCheckScale);
 
+        // Wall check
         Gizmos.color = Color.cyan;
         Gizmos.DrawWireSphere(new Vector3(transform.position.x - wallCheckDist, transform.position.y + wallCheckOffsetY), wallCheckRadius);
         Gizmos.DrawWireSphere(new Vector3(transform.position.x + wallCheckDist, transform.position.y + wallCheckOffsetY), wallCheckRadius);
+
+        // Dash stop check
+        Gizmos.color = Color.white;
+        //Gizmos.DrawCube(transform.position - Vector3.right * (transform.localScale.x / 2f), new Vector3(dshStopCheckScale.x, transform.localScale.y));
+        //Gizmos.DrawCube(transform.position + Vector3.right * (transform.localScale.x / 2f), new Vector3(dshStopCheckScale.x, transform.localScale.y));
+
+        //Gizmos.DrawCube(transform.position - Vector3.up * (transform.localScale.y / 2f), new Vector3(transform.localScale.x, dshStopCheckScale.y));
+        //Gizmos.DrawCube(transform.position + Vector3.up * (transform.localScale.y / 2f), new Vector3(transform.localScale.x, dshStopCheckScale.y));
     }
 }
