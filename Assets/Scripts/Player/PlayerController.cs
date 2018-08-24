@@ -20,8 +20,13 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private float wallCheckOffsetY;
     [SerializeField] private LayerMask whatIsWall;
 
+    [Header("Wall Sliding")]
+    [SerializeField] private float wallFallSpeedDecrease = 10f;
+
     private float moveInputX;
     private float numJumps;
+
+    private float regGravityScale;
 
     private float grCheckOffsetX = 0;
 
@@ -38,6 +43,7 @@ public class PlayerController : MonoBehaviour {
 
     void Start() {
         ResetExtraJumps();
+        regGravityScale = rb.gravityScale;
     }
 
     void FixedUpdate() {
@@ -54,6 +60,10 @@ public class PlayerController : MonoBehaviour {
     void Update() {
         if (isLanded)
             Land();
+
+        if (isWallSliding && rb.velocity.y <= 0) {
+            rb.AddForce(Vector2.up * wallFallSpeedDecrease);
+        }
     }
 
     public void Move(float horiz) {
