@@ -7,13 +7,21 @@ public class PlayerAnim : MonoBehaviour {
     [SerializeField] private Transform modelParent;
     [SerializeField] private bool facingRight = true;
 
+    [Header("Jumping")]
+    [SerializeField] private GameObject jumpSmokePfb;
+    [SerializeField] private Transform jumpSmokeOrigin;
+    [SerializeField] private float jumpSmokeLength;
+
     [Header("Wall Sliding")]
     [SerializeField] private GameObject wallSmokePfb;
     [SerializeField] private Transform leftWallSmokeOrigin, rightWallSmokeOrigin;
 
+    private ParticleSystem jumpSmoke;
+    private float jumpSmokeTimer = 0;
+
     private ParticleSystem wallSmoke;
     private GameObject lastWall;
-    private Transform currentSmokeOrigin;
+    private Transform currentWallSmokeOrigin;
 
 	// Use this for initialization
 	void Start () {
@@ -23,7 +31,19 @@ public class PlayerAnim : MonoBehaviour {
 
     void Update() {
         if (wallSmoke != null)
-            wallSmoke.transform.position = currentSmokeOrigin.transform.position;
+            wallSmoke.transform.position = currentWallSmokeOrigin.transform.position;
+
+        if (jumpSmokeTimer > 0)
+            jumpSmokeTimer -= Time.deltaTime;
+
+        if (jumpSmoke != null) {
+            jumpSmoke.transform.position = jumpSmokeOrigin.transform.position;
+
+            if (jumpSmokeTimer <= 0) {
+                jumpSmoke.Stop();
+                Destroy(jumpSmoke.gameObject, 1f);
+            }
+        }
     }
 
     public void LookLeft () {
@@ -40,9 +60,14 @@ public class PlayerAnim : MonoBehaviour {
         modelParent.localScale = localModelScale;
     }
 
+    public void SpawnJumpSmoke () {
+        jumpSmoke = Instantiate(jumpSmokePfb, jumpSmokeOrigin.position, Quaternion.identity).GetComponent<ParticleSystem>();
+        jumpSmokeTimer = jumpSmokeLength;
+    }
+
     public void StartWallSlide (bool wallOnRight, GameObject wall) {
         if (!ReferenceEquals(wall, lastWall)) {
-            GenerateWallSmoke(wallOnRight);
+            SpawnWallSmoke(wallOnRight);
             lastWall = wall;
         }
     }
@@ -59,8 +84,8 @@ public class PlayerAnim : MonoBehaviour {
         return facingRight;
     }
 
-    void GenerateWallSmoke(bool wallOnRight) {
-        currentSmokeOrigin = wallOnRight ? rightWallSmokeOrigin : leftWallSmokeOrigin;
-        wallSmoke = Instantiate(wallSmokePfb, currentSmokeOrigin.transform.position, Quaternion.identity).GetComponent<ParticleSystem>();
+    void SpawnWallSmoke(bool wallOnRight) {
+        currentWallSmokeOrigin = wallOnRight ? rightWallSmokeOrigin : leftWallSmokeOrigin;
+        wallSmoke = Instantiate(wallSmokePfb, currentWallSmokeOrigin.transform.position, Quaternion.identity).GetComponent<ParticleSystem>();
     }
 }

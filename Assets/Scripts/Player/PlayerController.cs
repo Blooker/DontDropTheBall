@@ -145,7 +145,7 @@ public class PlayerController : MonoBehaviour {
             WallJump();
         } else {
             GroundJump();
-        }
+        }        
     }
 
     private void GroundJump () {
@@ -154,12 +154,15 @@ public class PlayerController : MonoBehaviour {
 
         if (numJumps > 0) {
             rb.velocity = Vector2.up * jumpForce;
+            playerAnim.SpawnJumpSmoke();
             numJumps -= 1;
         }
     }
 
     private void WallJump () {
         rb.velocity = Vector2.up * wJumpUpForce;
+        playerAnim.SpawnJumpSmoke();
+
         wJumpMoveSleepTimer = wJumpMoveSleepAmount;
         EndWallSlide();
     }
@@ -168,8 +171,6 @@ public class PlayerController : MonoBehaviour {
     void Land () {
         ResetExtraJumps();
         isLanded = false;
-
-        //Debug.Log("Landed!");
     }
 
     void StartWallSlide(bool wallOnRight, GameObject wall) {
@@ -204,24 +205,24 @@ public class PlayerController : MonoBehaviour {
         return result;
     }
 
+    // Checks for wall to left of player. Returns wall object that is in contact with the player.
     GameObject CheckWallLeft () {
         RaycastHit2D hit = Physics2D.CircleCast(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), wallCheckRadius, Vector2.left, wallCheckDist, whatIsWall);
         GameObject result;
         if (hit) {
             result = hit.collider.gameObject;
-            //Debug.Log("Touching left wall");
         } else {
             result = null;
         }
         return result;
     }
 
+    // Checks for wall to right of player. Returns wall object that is in contact with the player.
     GameObject CheckWallRight() {
         RaycastHit2D hit = Physics2D.CircleCast(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), wallCheckRadius, Vector2.right, wallCheckDist, whatIsWall);
         GameObject result;
         if (hit) {
             result = hit.collider.gameObject;
-            //Debug.Log("Touching right wall");
         } else {
             result = null;
         }
