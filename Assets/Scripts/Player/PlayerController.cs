@@ -129,6 +129,15 @@ public class PlayerController : MonoBehaviour {
 
     void StartWallSlide(bool wallOnRight, GameObject wall) {
         isWallSliding = true;
+
+        Vector2 currentPos = transform.position;
+        if (wallOnRight) {
+            currentPos.x = wall.transform.position.x - (transform.localScale.x / 2f) - (wall.GetComponent<BoxCollider2D>().size.x / 2f);
+        } else {
+            currentPos.x = wall.transform.position.x + (transform.localScale.x / 2f) + (wall.GetComponent<BoxCollider2D>().size.x / 2f);
+        }
+        transform.position = currentPos;
+
         playerAnim.StartWallSlide(wallOnRight, wall);
     }
 
