@@ -25,7 +25,7 @@ public class PlayerController : MonoBehaviour {
 
     private float grCheckOffsetX = 0;
 
-    private bool isGrounded = false, isLanded = false;
+    private bool isGrounded = false, isLanded = false, isWallSliding = false;
 
     private PlayerAnim playerAnim;
     private Rigidbody2D rb;
@@ -67,10 +67,21 @@ public class PlayerController : MonoBehaviour {
             moveDelta = acceleration;
         }
 
-        if (CheckWallRight() && horiz > 0 || CheckWallLeft() && horiz < 0) {
+        GameObject wallTouchedRight = CheckWallRight();
+        GameObject wallTouchedLeft = CheckWallLeft();
+
+        if (wallTouchedRight != null && horiz > 0) {
             moveInputX = 0;
+            if (!isGrounded)
+                StartWallSlide(true, wallTouchedRight);
+        } else if (wallTouchedLeft != null && horiz < 0) {
+            moveInputX = 0;
+            if (!isGrounded)
+                StartWallSlide(false, wallTouchedLeft);
         } else {
             moveInputX = Mathf.MoveTowards(moveInputX, horiz, moveDelta);
+            if (isWallSliding)
+                EndWallSlide();
         }
 
         if (moveInputX != 0) {
@@ -103,7 +114,17 @@ public class PlayerController : MonoBehaviour {
         ResetExtraJumps();
         isLanded = false;
 
-        Debug.Log("Landed!");
+        //Debug.Log("Landed!");
+    }
+
+    void StartWallSlide(bool wallOnRight, GameObject wall) {
+        isWallSliding = true;
+        playerAnim.StartWallSlide(wallOnRight, wall);
+    }
+
+    void EndWallSlide() {
+        isWallSliding = false;
+        playerAnim.EndWallSlide();
     }
 
     bool CheckGround () {
@@ -118,17 +139,27 @@ public class PlayerController : MonoBehaviour {
         return result;
     }
 
-    bool CheckWallLeft () {
-        bool result = (bool)Physics2D.CircleCast(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), wallCheckRadius, Vector2.left, wallCheckDist, whatIsWall);
-        if (result)
-            Debug.Log("Touching left wall");
+    GameObject CheckWallLeft () {
+        RaycastHit2D hit = Physics2D.CircleCast(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), wallCheckRadius, Vector2.left, wallCheckDist, whatIsWall);
+        GameObject result;
+        if (hit) {
+            result = hit.collider.gameObject;
+            //Debug.Log("Touching left wall");
+        } else {
+            result = null;
+        }
         return result;
     }
 
-    bool CheckWallRight() {
-        bool result = (bool)Physics2D.CircleCast(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), wallCheckRadius, Vector2.right, wallCheckDist, whatIsWall);
-        if (result)
-            Debug.Log("Touching right wall");
+    GameObject CheckWallRight() {
+        RaycastHit2D hit = Physics2D.CircleCast(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), wallCheckRadius, Vector2.right, wallCheckDist, whatIsWall);
+        GameObject result;
+        if (hit) {
+            result = hit.collider.gameObject;
+            //Debug.Log("Touching right wall");
+        } else {
+            result = null;
+        }
         return result;
     }
 

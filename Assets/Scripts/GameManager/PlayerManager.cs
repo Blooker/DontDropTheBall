@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class PlayerManager : MonoBehaviour {
 
-    [SerializeField] private GameObject playerPrefab;
+    [SerializeField] private GameObject playerPfb;
     [SerializeField] private Vector2 startPos;
 
     private PlayerController player;
@@ -34,14 +34,14 @@ public class PlayerManager : MonoBehaviour {
         if (player != null)
             DestroyPlayer ();
 
-        player = Instantiate(playerPrefab, startPos, Quaternion.identity).GetComponent<PlayerController>();
+        player = Instantiate(playerPfb, startPos, Quaternion.identity).GetComponent<PlayerController>();
         playerInput.SetPlayer(player);
     }
 
     // Destroys player and safely removes all references to it
     public void DestroyPlayer () {
         playerInput.SetPlayer(null);
-        Destroy(player);
+        Destroy(player.gameObject);
     }
 
 }
