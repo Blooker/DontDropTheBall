@@ -48,7 +48,6 @@ public class PlayerAnim : MonoBehaviour {
     }
 
     public void EndWallSlide () {
-        Debug.Log("Wall slide ended");
         wallSmoke.Stop();
         Destroy(wallSmoke.gameObject, 1f);
 
