@@ -56,25 +56,44 @@ public class PlayerInput : MonoBehaviour {
         Vector2 rightStick = ApplyStickDeadzone(state.ThumbSticks.Right);
 
         bool leftDPAD = state.DPad.Left == ButtonState.Pressed, rightDPAD = state.DPad.Right == ButtonState.Pressed;
+        bool upDPAD = state.DPad.Up == ButtonState.Pressed, downDPAD = state.DPad.Down == ButtonState.Pressed;
 
         // If left stick movement is being picked up
         if (leftStick != Vector2.zero) {
-            // Clicking the left stick toggles running
             playerController.Move(leftStick.x);
-        } else if (leftDPAD || rightDPAD) {
-            float dir = 0;
-            if (leftDPAD) {
-                dir -= 1;
-            } 
 
-            if (rightDPAD) {
-                dir += 1;
+            if (OnXInputButtonDown(prevState.Buttons.LeftShoulder, state.Buttons.LeftShoulder)) {
+                playerController.StartDash(leftStick.x, leftStick.y);
             }
 
-            playerController.Move(dir);
+        } else if (leftDPAD || rightDPAD || upDPAD || downDPAD) {
+            float xDir = 0;
+            if (leftDPAD) {
+                xDir -= 1;
+            } 
+            if (rightDPAD) {
+                xDir += 1;
+            }
+
+            float yDir = 0;
+            if(upDPAD) {
+                yDir += 1;
+            }
+            if(downDPAD) {
+                yDir -= 1;
+            }
+
+            playerController.Move(xDir);
+
+            if (OnXInputButtonDown(prevState.Buttons.LeftShoulder, state.Buttons.LeftShoulder)) {
+                playerController.StartDash(xDir, yDir);
+            }
         }
         else {
             playerController.Move(horizMove);
+            if (Input.GetKeyDown(KeyCode.LeftShift)) {
+                playerController.StartDash(horizMove, vertMove);
+            }
         }
 
         bool jump = OnXInputButtonDown(prevState.Buttons.A, state.Buttons.A) || Input.GetKeyDown(KeyCode.Space);

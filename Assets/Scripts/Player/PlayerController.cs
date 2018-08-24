@@ -25,6 +25,10 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private float wJumpUpForce;
     [SerializeField] private float wJumpMoveSleepAmount = 0.2f;
 
+    [Header("Dash")]
+    [SerializeField] private float dshSpeed = 0.1f;
+    [SerializeField] private float dshDistance = 10f;
+
     private float moveInputX;
     private float numJumps;
 
@@ -32,10 +36,14 @@ public class PlayerController : MonoBehaviour {
 
     private float grCheckOffsetX = 0;
 
+    private float wJumpMoveSleepTimer = 0;
+
+    private Vector3 dshStart, dshEnd;
+    private float dshLerpValue = 1;
+
     private bool isGrounded = false, isLanded = false;
     private bool isWallSliding = false, wallOnRightSide = false;
-
-    private float wJumpMoveSleepTimer = 0;
+    private bool isDashing = false;
 
     private PlayerAnim playerAnim;
     private Rigidbody2D rb;
@@ -72,6 +80,14 @@ public class PlayerController : MonoBehaviour {
 
         if (wJumpMoveSleepTimer > 0) {
             wJumpMoveSleepTimer -= Time.deltaTime;
+        }
+
+        if (dshLerpValue < 1) {
+            transform.position = Vector3.Lerp(dshStart, dshEnd, dshLerpValue);
+
+            dshLerpValue += dshSpeed;
+        } else if (isDashing) {
+            EndDash();
         }
     }
 
@@ -148,6 +164,18 @@ public class PlayerController : MonoBehaviour {
         }        
     }
 
+    public void StartDash (float horiz, float vert) {
+        Vector3 dashDir = new Vector2(horiz, vert).normalized;
+
+        dshStart = transform.position;
+        dshEnd = transform.position + dashDir * dshDistance;
+
+        rb.simulated = false;
+        dshLerpValue = 0;
+
+        isDashing = true;
+    }
+
     private void GroundJump () {
         if (isGrounded)
             numJumps += 1;
@@ -191,6 +219,14 @@ public class PlayerController : MonoBehaviour {
     void EndWallSlide() {
         isWallSliding = false;
         playerAnim.EndWallSlide();
+    }
+
+    void EndDash () {
+        transform.position = dshEnd;
+        rb.simulated = true;
+
+        rb.velocity = Vector3.zero;
+        isDashing = false;
     }
 
     bool CheckGround () {
