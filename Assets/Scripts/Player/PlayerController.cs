@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -11,6 +12,7 @@ public class PlayerController : MonoBehaviour {
 
     [Header("Ground Check")]
     [SerializeField] private /*float grCheckRadius*/ Vector2 grCheckScale;
+    [SerializeField] private float grCheckMaxYScale, grCheckMaxDownVel;
     [SerializeField] private float grCheckDist, grCheckMoveOffsetX;
     [SerializeField] private LayerMask whatIsGround;
 
@@ -28,10 +30,14 @@ public class PlayerController : MonoBehaviour {
     [Header("Dash")]
     [SerializeField] private float dshSpeed = 0.1f;
     [SerializeField] private float dshDistance = 10f;
+    [SerializeField] private float maxDashes = 1;
     [SerializeField] private LayerMask whatStopsDash;
 
     private float moveInputX;
+
     private float numJumps;
+    private ContactFilter2D groundFilter;
+    private Vector3 lastLandPos;
 
     private float regGravityScale;
 
@@ -39,8 +45,10 @@ public class PlayerController : MonoBehaviour {
 
     private float wJumpMoveSleepTimer = 0;
 
+    private float numDashes = 0;
     private Vector3 dshStart, dshEnd;
     private float dshLerpValue = 1, dshCurrentSpeed;
+    private ContactFilter2D dshFilter;
 
     private bool isGrounded = false, isLanded = false;
     private bool isWallSliding = false, wallOnRightSide = false;
@@ -57,17 +65,29 @@ public class PlayerController : MonoBehaviour {
 
     void Start() {
         ResetExtraJumps();
+        ResetDashes();
+
         regGravityScale = rb.gravityScale;
+
+        groundFilter = new ContactFilter2D();
+        dshFilter = new ContactFilter2D();
+
+        groundFilter.SetLayerMask(whatIsGround);
+        dshFilter.SetLayerMask(whatStopsDash);
     }
 
     void FixedUpdate() {
-        bool circleCast = CheckGround();
+        if (!isDashing) {
+            RaycastHit2D[] castResult = CheckGround();
+            bool touchedGround = castResult != null;
 
-        if (!isGrounded && circleCast) {
-            isLanded = true;
+            if (!isGrounded && touchedGround) {
+                isLanded = true;
+                lastLandPos = castResult[0].point;
+            }
+
+            isGrounded = touchedGround;
         }
-
-        isGrounded = circleCast;
     }
 
     // Update is called once per frame
@@ -81,7 +101,6 @@ public class PlayerController : MonoBehaviour {
 
         if (wJumpMoveSleepTimer > 0) {
             wJumpMoveSleepTimer -= Time.deltaTime;
-            Debug.Log(wJumpMoveSleepTimer);
         }
 
         if (dshLerpValue < 0.95f) {
@@ -168,6 +187,9 @@ public class PlayerController : MonoBehaviour {
     }
 
     public void StartDash(float horiz, float vert) {
+        if (numDashes <= 0)
+            return;
+
         if (isGrounded && vert < 0)
             vert = 0;
 
@@ -178,12 +200,8 @@ public class PlayerController : MonoBehaviour {
 
         RaycastHit2D[] hits = new RaycastHit2D[1];
 
-        ContactFilter2D filter = new ContactFilter2D();
-        filter.SetLayerMask(whatStopsDash);
-
         dshStart = transform.position;
-
-        if (Physics2D.BoxCast(transform.position, transform.localScale, 0, dashDir, filter, hits, dshDistance) > 0) {
+        if (Physics2D.BoxCast(transform.position, transform.localScale, 0, dashDir, dshFilter, hits, dshDistance) > 0) {
             //Debug.Log("Obstacle found");
             dshEnd = hits[0].point;
 
@@ -235,10 +253,21 @@ public class PlayerController : MonoBehaviour {
     // Call when the player has just landed on the ground
     void Land () {
         ResetExtraJumps();
+        ResetDashes();
+
+        Vector3 vel = rb.velocity;
+        vel.y = 0;
+        rb.velocity = vel;
+
+        transform.position = new Vector3(transform.position.x, lastLandPos.y) + (Vector3.up * (transform.localScale.y / 2f));
+
         isLanded = false;
     }
 
     void StartWallSlide(bool wallOnRight, GameObject wall) {
+        if(!isWallSliding)
+            Debug.Log("wall slide start on " + (wallOnRight ? "right" : "left"));
+
         isWallSliding = true;
         wallOnRightSide = wallOnRight;
 
@@ -259,8 +288,12 @@ public class PlayerController : MonoBehaviour {
     }
 
     void EndDash (Vector3 endPos) {
+        numDashes -= 1;
 
         transform.position = GetDashEndPlayerPos(endPos);
+
+        if (isGrounded)
+            ResetDashes();
 
         dshLerpValue = 1;
 
@@ -276,7 +309,7 @@ public class PlayerController : MonoBehaviour {
 
         if (dshCurrentSpeed != dshSpeed) {
             Vector3 startEndDir = (dshEnd - dshStart).normalized;
-            Debug.Log(startEndDir);
+            //Debug.Log(startEndDir);
 
             Vector3 endOffset = Vector3.zero;
             if (startEndDir.y > 0.75f && startEndDir.x > -0.75f && startEndDir.x < 0.75f) {
@@ -305,7 +338,7 @@ public class PlayerController : MonoBehaviour {
         return result;
     }
 
-    bool CheckGround () {
+    RaycastHit2D[] CheckGround () {
         //Vector2 circleCastOrigin;
         //if (moveInputX > 0) {
         //    circleCastOrigin = new Vector2(transform.position.x - grCheckOffsetX, transform.position.y);
@@ -314,8 +347,19 @@ public class PlayerController : MonoBehaviour {
         //}
 
         //bool result = (bool)Physics2D.CircleCast(circleCastOrigin, grCheckRadius, Vector2.down, grCheckDist, whatIsGround);
-        bool result = (bool)Physics2D.BoxCast(transform.position, grCheckScale, 0, Vector2.down, grCheckDist, whatIsGround);
-        return result;
+        RaycastHit2D[] hits = new RaycastHit2D[1];
+
+        Vector3 _grCheckScale = grCheckScale;
+        if (rb.velocity.y <= 0) {
+            float yScale = ExtensionMethods.Map(rb.velocity.y, 0, -grCheckMaxDownVel, grCheckScale.y, grCheckMaxYScale);
+            _grCheckScale = new Vector3(grCheckScale.x, yScale);
+        }
+
+        if (Physics2D.BoxCast(transform.position, _grCheckScale, 0, Vector2.down, groundFilter, hits, grCheckDist) > 0) {
+            return hits;
+        }
+
+        return null;
     }
 
     // Checks for wall to left of player. Returns wall object that is in contact with the player.
@@ -346,11 +390,24 @@ public class PlayerController : MonoBehaviour {
         numJumps = maxJumps-1;
     }
 
+    void ResetDashes () {
+        numDashes = maxDashes;
+    }
+
     void OnDrawGizmosSelected() {
         // Ground check
         Gizmos.color = Color.yellow;
         //Gizmos.DrawWireSphere(new Vector3(moveInputX > 0 ? transform.position.x - grCheckOffsetX : transform.position.x + grCheckOffsetX, transform.position.y - grCheckDist), grCheckRadius);
-        Gizmos.DrawCube(transform.position + (Vector3.down * grCheckDist), grCheckScale);
+
+        Vector3 _grCheckScale = grCheckScale;
+        if (EditorApplication.isPlaying && rb != null) {
+            if (rb.velocity.y <= 0) {
+                float yScale = ExtensionMethods.Map(rb.velocity.y, 0, -grCheckMaxDownVel, grCheckScale.y, grCheckMaxYScale);
+                _grCheckScale = new Vector3(grCheckScale.x, yScale);
+            }
+        }
+
+        Gizmos.DrawCube(transform.position + (Vector3.down * grCheckDist), _grCheckScale);
 
         // Wall check
         Gizmos.color = Color.cyan;
