@@ -46,8 +46,8 @@ public class PlayerController : MonoBehaviour {
     private float wJumpMoveSleepTimer = 0;
 
     private float numDashes = 0;
-    private Vector3 dshStart, dshEnd;
-    private float dshLerpValue = 1, dshCurrentSpeed;
+    private Vector3 dshStart, dshEnd, dshColNormal;
+    private float dshLerpValue = 1, dshLerpLimit = 1f, dshCurrentSpeed;
     private ContactFilter2D dshFilter;
 
     private bool isGrounded = false, isLanded = false;
@@ -103,7 +103,7 @@ public class PlayerController : MonoBehaviour {
             wJumpMoveSleepTimer -= Time.deltaTime;
         }
 
-        if (dshLerpValue < 0.95f) {
+        if (dshLerpValue < dshLerpLimit) {
             transform.position = Vector3.Lerp(dshStart, dshEnd, dshLerpValue);
             dshLerpValue += dshCurrentSpeed * Time.deltaTime;
         } else if (isDashing) {
@@ -112,6 +112,9 @@ public class PlayerController : MonoBehaviour {
     }
 
     public void Move(float horiz) {
+        if (isDashing)
+            return;
+
         float moveDelta = 0;
 
         float _acceleration = acceleration * Time.deltaTime;
@@ -204,6 +207,9 @@ public class PlayerController : MonoBehaviour {
         if (Physics2D.BoxCast(transform.position, transform.localScale, 0, dashDir, dshFilter, hits, dshDistance) > 0) {
             //Debug.Log("Obstacle found");
             dshEnd = hits[0].point;
+            dshColNormal = hits[0].normal;
+
+            //Debug.Log(dshColNormal);
 
             if (dashDir.y == 0) {
                 dshEnd.y = transform.position.y;
@@ -213,7 +219,13 @@ public class PlayerController : MonoBehaviour {
                 dshEnd.x = transform.position.x;
             }
 
+            Vector3 startToEndDir = (dshEnd - dshStart).normalized;
+
+            dshEnd += new Vector3(-startToEndDir.x * (transform.localScale.x / 1.5f), -startToEndDir.y * (transform.localScale.y / 1.5f));
+
             float startToEndDist = Vector3.Distance(dshStart, dshEnd);
+            Debug.Log(startToEndDist);
+
             if (startToEndDist < 3.5f) {
                 EndDash(dshEnd);
                 return;
@@ -255,11 +267,13 @@ public class PlayerController : MonoBehaviour {
         ResetExtraJumps();
         ResetDashes();
 
-        Vector3 vel = rb.velocity;
-        vel.y = 0;
-        rb.velocity = vel;
+        if (rb.velocity.y < 0) {
+            Vector3 vel = rb.velocity;
+            vel.y = 0;
+            rb.velocity = vel;
 
-        transform.position = new Vector3(transform.position.x, lastLandPos.y) + (Vector3.up * (transform.localScale.y / 2f));
+            transform.position = new Vector3(transform.position.x, lastLandPos.y) + (Vector3.up * (transform.localScale.y / 2f));
+        }
 
         isLanded = false;
     }
@@ -290,7 +304,7 @@ public class PlayerController : MonoBehaviour {
     void EndDash (Vector3 endPos) {
         numDashes -= 1;
 
-        transform.position = GetDashEndPlayerPos(endPos);
+        //transform.position = endPos;
 
         if (isGrounded)
             ResetDashes();
@@ -304,39 +318,38 @@ public class PlayerController : MonoBehaviour {
     }
 
     // Gets the correct dash end position so that the player doesn't clip into terrain
-    Vector3 GetDashEndPlayerPos (Vector3 endPos) {
-        Vector3 result;
+    //Vector3 GetDashEndPlayerPos (Vector3 endPos) {
+    //    Vector3 result;
 
-        if (dshCurrentSpeed != dshSpeed) {
-            Vector3 startEndDir = (dshEnd - dshStart).normalized;
-            //Debug.Log(startEndDir);
+    //    if (dshCurrentSpeed != dshSpeed) {
+    //        //Vector3 startEndDir = (dshEnd - dshStart).normalized;
+    //        //Debug.Log(startEndDir);
 
-            Vector3 endOffset = Vector3.zero;
-            if (startEndDir.y > 0.75f && startEndDir.x > -0.75f && startEndDir.x < 0.75f) {
-                // up code
-                endOffset = Vector3.down * (transform.localScale.y / 2f);
-            }
-            else if (startEndDir.x < -0.75f && startEndDir.y > -0.75f && startEndDir.y < 0.75f) {
-                // left code
-                endOffset = Vector3.right * (transform.localScale.x / 2f);
-            }
-            else if (startEndDir.y < -0.75f && startEndDir.x > -0.75f && startEndDir.x < 0.75f) {
-                // down code
-                endOffset = Vector3.up * (transform.localScale.y / 2f);
-            }
-            else if (startEndDir.x > 0.75f && startEndDir.y > -0.75f && startEndDir.y < 0.75f) {
-                // right code
-                endOffset = Vector3.left * (transform.localScale.x / 2f);
-            }
+    //        Vector3 endOffset = Vector3.zero;
+    //        if (dshColNormal.y > 0.75f && dshColNormal.x > -0.75f && dshColNormal.x < 0.75f) {
+    //            // up code
+    //            endOffset = Vector3.up * (transform.localScale.y / 1.5f);
+    //        } else if (dshColNormal.y < -0.75f && dshColNormal.x > -0.75f && dshColNormal.x < 0.75f) {
+    //            // down code
+    //            endOffset = Vector3.down * (transform.localScale.y / 1.5f);
+    //        }
 
-            result = endPos + endOffset;
-        }
-        else {
-            result = endPos;
-        }
+    //        if (dshColNormal.x < -0.75f && dshColNormal.y > -0.75f && dshColNormal.y < 0.75f) {
+    //            // left code
+    //            endOffset = Vector3.left * (transform.localScale.x / 1.5f);
+    //        } else if (dshColNormal.x > 0.75f && dshColNormal.y > -0.75f && dshColNormal.y < 0.75f) {
+    //            // right code
+    //            endOffset = Vector3.right * (transform.localScale.x / 1.5f);
+    //        }
 
-        return result;
-    }
+    //        result = endPos + endOffset;
+    //    }
+    //    else {
+    //        result = endPos;
+    //    }
+
+    //    return result;
+    //}
 
     RaycastHit2D[] CheckGround () {
         //Vector2 circleCastOrigin;
