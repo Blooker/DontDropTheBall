@@ -134,6 +134,7 @@ public class PlayerAnim : MonoBehaviour {
     }
 
     public void StartDash() {
+        bodyFlashTimer = -1;
         SetBodyPaletteMix(1);
         landFlashCount = 0;
     }

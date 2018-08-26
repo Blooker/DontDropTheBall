@@ -96,7 +96,7 @@ public class PlayerController : MonoBehaviour {
             Land();
 
         if (isWallSliding && rb.velocity.y <= 0) {
-            rb.AddForce(Vector2.up * wFallSpeedDecrease);
+            rb.AddForce(Vector2.up * wFallSpeedDecrease * Time.deltaTime);
         }
 
         if (wJumpMoveSleepTimer > 0) {
