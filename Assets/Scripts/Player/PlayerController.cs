@@ -377,10 +377,14 @@ public class PlayerController : MonoBehaviour {
 
     // Checks for wall to left of player. Returns wall object that is in contact with the player.
     GameObject CheckWallLeft () {
-        RaycastHit2D hit = Physics2D.CircleCast(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), wallCheckRadius, Vector2.left, wallCheckDist, whatIsWall);
+        //RaycastHit2D hit = Physics2D.CircleCast(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), wallCheckRadius, Vector2.left, wallCheckDist, whatIsWall);
+        RaycastHit2D hitUp = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), Vector2.left, wallCheckDist, whatIsWall);
+        RaycastHit2D hitDown = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y - wallCheckOffsetY), Vector2.left, wallCheckDist, whatIsWall);
         GameObject result;
-        if (hit) {
-            result = hit.collider.gameObject;
+        if (hitUp) {
+            result = hitUp.collider.gameObject;
+        } else if (hitDown) {
+            result = hitDown.collider.gameObject;
         } else {
             result = null;
         }
@@ -389,10 +393,14 @@ public class PlayerController : MonoBehaviour {
 
     // Checks for wall to right of player. Returns wall object that is in contact with the player.
     GameObject CheckWallRight() {
-        RaycastHit2D hit = Physics2D.CircleCast(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), wallCheckRadius, Vector2.right, wallCheckDist, whatIsWall);
+        //RaycastHit2D hit = Physics2D.CircleCast(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), wallCheckRadius, Vector2.right, wallCheckDist, whatIsWall);
+        RaycastHit2D hitUp = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), Vector2.right, wallCheckDist, whatIsWall);
+        RaycastHit2D hitDown = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y - wallCheckOffsetY), Vector2.right, wallCheckDist, whatIsWall);
         GameObject result;
-        if (hit) {
-            result = hit.collider.gameObject;
+        if (hitUp) {
+            result = hitUp.collider.gameObject;
+        } else if (hitDown) {
+            result = hitDown.collider.gameObject;
         } else {
             result = null;
         }
@@ -407,6 +415,7 @@ public class PlayerController : MonoBehaviour {
         numDashes = maxDashes;
     }
 
+#if UNITY_EDITOR_WIN
     void OnDrawGizmosSelected() {
         // Ground check
         Gizmos.color = Color.yellow;
@@ -424,8 +433,15 @@ public class PlayerController : MonoBehaviour {
 
         // Wall check
         Gizmos.color = Color.cyan;
-        Gizmos.DrawWireSphere(new Vector3(transform.position.x - wallCheckDist, transform.position.y + wallCheckOffsetY), wallCheckRadius);
-        Gizmos.DrawWireSphere(new Vector3(transform.position.x + wallCheckDist, transform.position.y + wallCheckOffsetY), wallCheckRadius);
+
+        Gizmos.DrawLine(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), new Vector2(transform.position.x - wallCheckDist, transform.position.y + wallCheckOffsetY));
+        Gizmos.DrawLine(new Vector2(transform.position.x, transform.position.y - wallCheckOffsetY), new Vector2(transform.position.x - wallCheckDist, transform.position.y - wallCheckOffsetY));
+
+        Gizmos.DrawLine(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), new Vector2(transform.position.x + wallCheckDist, transform.position.y + wallCheckOffsetY));
+        Gizmos.DrawLine(new Vector2(transform.position.x, transform.position.y - wallCheckOffsetY), new Vector2(transform.position.x + wallCheckDist, transform.position.y - wallCheckOffsetY));
+
+        //Gizmos.DrawWireSphere(new Vector3(transform.position.x - wallCheckDist, transform.position.y + wallCheckOffsetY), wallCheckRadius);
+        //Gizmos.DrawWireSphere(new Vector3(transform.position.x + wallCheckDist, transform.position.y + wallCheckOffsetY), wallCheckRadius);
 
         // Dash stop check
         Gizmos.color = Color.white;
@@ -435,4 +451,7 @@ public class PlayerController : MonoBehaviour {
         //Gizmos.DrawCube(transform.position - Vector3.up * (transform.localScale.y / 2f), new Vector3(transform.localScale.x, dshStopCheckScale.y));
         //Gizmos.DrawCube(transform.position + Vector3.up * (transform.localScale.y / 2f), new Vector3(transform.localScale.x, dshStopCheckScale.y));
     }
+#endif
+
 }
+
