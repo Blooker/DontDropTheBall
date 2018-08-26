@@ -16,6 +16,14 @@ public class PlayerAnim : MonoBehaviour {
     [SerializeField] private GameObject wallSmokePfb;
     [SerializeField] private Transform leftWallSmokeOrigin, rightWallSmokeOrigin;
 
+    [Header("Dash")]
+    [SerializeField] private float bodyFlashSpeedAir;
+    [SerializeField] private float bodyFlashSpeedLand;
+    [SerializeField] private Vector2 bodyFlashMinMax;
+    [SerializeField] private int maxLandBodyFlashes;
+
+    private Material bodyMat;
+
     private ParticleSystem jumpSmoke;
     private float jumpSmokeTimer = 0;
 
@@ -23,11 +31,23 @@ public class PlayerAnim : MonoBehaviour {
     private GameObject lastWall;
     private Transform currentWallSmokeOrigin;
 
-	// Use this for initialization
-	void Start () {
+    private bool outOfDashes = false;
+    private float bodyFlashTimer = -1;
+    private float bodyFlashSpeed, bodyFlashMin, bodyFlashMax;
+    private int landFlashCount = 0;
+    private bool flashCountIncreased = false;
+
+    void Awake() {
+        bodyMat = modelParent.transform.GetChild(0).GetComponent<MeshRenderer>().sharedMaterial;
+    }
+
+    // Use this for initialization
+    void Start () {
         if (!facingRight)
             LookLeft();
-	}
+
+        ResetColorPalette();
+    }
 
     void Update() {
         if (wallSmoke != null)
@@ -44,6 +64,30 @@ public class PlayerAnim : MonoBehaviour {
                 Destroy(jumpSmoke.gameObject, 1f);
 
                 jumpSmoke = null;
+            }
+        }
+
+        if (bodyFlashTimer > -1) {
+            bodyFlashTimer += Time.deltaTime * bodyFlashSpeed;
+            if (bodyFlashTimer > 2)
+                bodyFlashTimer = 0;
+
+            SetBodyFlash(bodyFlashTimer, bodyFlashMin, bodyFlashMax);
+
+            if (!outOfDashes) {
+                if (bodyFlashTimer >= 0.75f && !flashCountIncreased) {
+                    landFlashCount += 1;
+                    flashCountIncreased = true;
+                }
+
+                if (bodyFlashTimer < 0.75f && flashCountIncreased) {
+                    flashCountIncreased = false;
+                }
+
+                if (landFlashCount >= maxLandBodyFlashes) {
+                    bodyFlashTimer = -1;
+                    SetBodyPaletteMix(0);
+                }
             }
         }
     }
@@ -89,6 +133,29 @@ public class PlayerAnim : MonoBehaviour {
         lastWall = null;
     }
 
+    public void StartDash() {
+        SetBodyPaletteMix(1);
+        landFlashCount = 0;
+    }
+
+    public void EndDash() {
+        bodyFlashTimer = 0.5f;
+        bodyFlashMin = bodyFlashMinMax.x;
+        bodyFlashMax = bodyFlashMinMax.y;
+        bodyFlashSpeed = bodyFlashSpeedAir;
+
+        outOfDashes = true;
+    }
+
+    public void ResetDashes () {
+        bodyFlashTimer = 1.5f;
+        bodyFlashMin = 0;
+        bodyFlashMax = 1;
+        bodyFlashSpeed = bodyFlashSpeedLand;
+
+        outOfDashes = false;
+    }
+
     public bool IsFacingRight () {
         return facingRight;
     }
@@ -96,5 +163,18 @@ public class PlayerAnim : MonoBehaviour {
     void SpawnWallSmoke(bool wallOnRight) {
         currentWallSmokeOrigin = wallOnRight ? rightWallSmokeOrigin : leftWallSmokeOrigin;
         wallSmoke = Instantiate(wallSmokePfb, currentWallSmokeOrigin.transform.position, Quaternion.identity).GetComponent<ParticleSystem>();
+    }
+
+    void SetBodyFlash (float timer, float min, float max) {
+        float flashAmount = ExtensionMethods.Map(Mathf.Sin(bodyFlashTimer * Mathf.PI), -1, 1, bodyFlashMin, bodyFlashMax);
+        SetBodyPaletteMix(flashAmount);
+    }
+
+    void SetBodyPaletteMix(float mixAmount) {
+        bodyMat.SetFloat("_PaletteMix", mixAmount);
+    }
+
+    void ResetColorPalette() {
+        SetBodyPaletteMix(0);
     }
 }

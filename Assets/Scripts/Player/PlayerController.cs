@@ -237,6 +237,8 @@ public class PlayerController : MonoBehaviour {
             dshCurrentSpeed = dshSpeed;
         }
 
+        playerAnim.StartDash();
+
         rb.simulated = false;
         dshLerpValue = 0;
 
@@ -312,8 +314,10 @@ public class PlayerController : MonoBehaviour {
         dshLerpValue = 1;
 
         rb.simulated = true;
-
         rb.velocity = Vector3.zero;
+
+        playerAnim.EndDash();
+
         isDashing = false;
     }
 
@@ -413,6 +417,7 @@ public class PlayerController : MonoBehaviour {
 
     void ResetDashes () {
         numDashes = maxDashes;
+        playerAnim.ResetDashes();
     }
 
 #if UNITY_EDITOR_WIN
