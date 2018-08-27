@@ -22,6 +22,13 @@ public class PlayerAnim : MonoBehaviour {
     [SerializeField] private Vector2 bodyFlashMinMax;
     [SerializeField] private int maxLandBodyFlashes;
 
+    [Header("Aim")]
+    [SerializeField] private float aimDistFromPlayer;
+    [SerializeField] private float aimLenNormalHit, aimLenStrongHit;
+    [SerializeField] private GameObject aimArrowPfb, aimSpherePfb;
+    [SerializeField] private float aimSphereSize, aimSphereGap;
+    [SerializeField] private Vector2 aimSphereMinMax;
+
     private Material bodyMat;
 
     private ParticleSystem jumpSmoke;
@@ -37,6 +44,10 @@ public class PlayerAnim : MonoBehaviour {
     private int landFlashCount = 0;
     private bool flashCountIncreased = false;
 
+    private GameObject aimParent;
+    private float[] aimSphereNormDists, aimSphereStrongDists;
+    private bool isAiming = false;
+
     void Awake() {
         bodyMat = modelParent.transform.GetChild(0).GetComponent<MeshRenderer>().sharedMaterial;
     }
@@ -47,6 +58,7 @@ public class PlayerAnim : MonoBehaviour {
             LookLeft();
 
         ResetColorPalette();
+        SpawnAimIcons();
     }
 
     void Update() {
@@ -90,6 +102,8 @@ public class PlayerAnim : MonoBehaviour {
                 }
             }
         }
+
+        //aimParent.SetActive(isAiming);
     }
 
     public void LookLeft () {
@@ -118,6 +132,7 @@ public class PlayerAnim : MonoBehaviour {
         jumpSmokeTimer = jumpSmokeLength;
     }
 
+    #region Wall Slide
     public void StartWallSlide (bool wallOnRight, GameObject wall) {
         if (!ReferenceEquals(wall, lastWall)) {
             SpawnWallSmoke(wallOnRight);
@@ -132,7 +147,9 @@ public class PlayerAnim : MonoBehaviour {
         wallSmoke = null;
         lastWall = null;
     }
+    #endregion
 
+    #region Dash
     public void StartDash() {
         //bodyFlashTimer = -1;
         //SetBodyPaletteMix(1);
@@ -162,6 +179,24 @@ public class PlayerAnim : MonoBehaviour {
 
         outOfDashes = false;
     }
+    #endregion
+
+    public void ShowAim (Vector2 aimDir, bool isStrongHit) {
+        float length;
+        if (isStrongHit) {
+            length = aimLenStrongHit;
+        } else {
+            length = aimLenNormalHit;
+        }
+
+        SetAimSpherePos(length, aimSphereSize, aimSphereGap, aimSphereMinMax.x, aimSphereMinMax.y);
+
+        isAiming = true;
+    }
+
+    public void HideAim() {
+        isAiming = false;
+    }
 
     public bool IsFacingRight () {
         return facingRight;
@@ -172,6 +207,68 @@ public class PlayerAnim : MonoBehaviour {
         wallSmoke = Instantiate(wallSmokePfb, currentWallSmokeOrigin.transform.position, Quaternion.identity).GetComponent<ParticleSystem>();
     }
 
+    void SetAimSpherePos (float length, float sphereSize, float gapSize, float minPos, float maxPos) {
+
+    }
+
+    void SpawnAimIcons () {
+        aimParent = new GameObject("AimParent");
+        aimParent.transform.parent = this.transform;
+        aimParent.transform.localScale = Vector3.one;
+        aimParent.transform.localPosition = Vector3.zero;
+
+        // Normal hit
+        float normSphereSize = aimSphereSize * aimLenNormalHit, normSphereGap = aimSphereGap * aimLenNormalHit;
+        Vector2 normSphereMinMax = aimSphereMinMax * aimLenNormalHit;
+
+        float normSphereUnit = normSphereSize + normSphereGap;
+        float normSphereLen = normSphereMinMax.y - normSphereMinMax.x;
+        float numNormUnits = normSphereLen / normSphereUnit;
+
+        int numNormSpheres = Mathf.FloorToInt(numNormUnits);
+        float normGapLen = normSphereGap + ((normSphereLen - (numNormSpheres - 1) * normSphereUnit + normSphereSize) / (numNormSpheres - 1f));
+
+        Debug.Log(numNormSpheres);
+
+        aimSphereNormDists = new float[numNormSpheres];
+        if (numNormSpheres > 0) {
+            aimSphereNormDists[0] = normSphereMinMax.x + aimDistFromPlayer;
+            for (int i = 1; i < aimSphereNormDists.Length; i++) {
+                aimSphereNormDists[i] = aimSphereNormDists[i - 1] + normGapLen + (normSphereSize / 2f);
+            }
+        }
+
+
+        // Strong hit
+        float strongSphereSize = aimSphereSize * aimLenStrongHit, strongSphereGap = aimSphereGap * aimLenStrongHit;
+        Vector2 strongSphereMinMax = aimSphereMinMax * aimLenStrongHit;
+
+        float strongSphereUnit = strongSphereSize + strongSphereGap;
+        float strongSphereLen = strongSphereMinMax.y - strongSphereMinMax.x;
+        float numStrongUnits = strongSphereLen / strongSphereUnit;
+
+        int numStrongSpheres = Mathf.FloorToInt(numStrongUnits);
+        float strongGapLen = strongSphereGap + ((strongSphereLen - (numStrongSpheres - 1) * strongSphereUnit + strongSphereSize) / (numStrongSpheres - 1f));
+
+        aimSphereStrongDists = new float[numStrongSpheres];
+        if (numStrongSpheres > 0) {
+            aimSphereStrongDists[0] = strongSphereMinMax.x + aimDistFromPlayer;
+            for (int i = 1; i < aimSphereStrongDists.Length; i++) {
+                aimSphereStrongDists[i] = aimSphereStrongDists[i - 1] + strongGapLen + (strongSphereSize / 2f);
+            }
+        }
+
+        GameObject newArrow = Instantiate(aimArrowPfb, Vector3.zero, Quaternion.identity, aimParent.transform);
+        newArrow.transform.localPosition = Vector3.zero;
+        newArrow.transform.localScale = new Vector3(aimArrowPfb.transform.localScale.x/transform.localScale.x, aimArrowPfb.transform.localScale.y/transform.localScale.y, 1f);
+        for (int i = 0; i < aimSphereStrongDists.Length; i++) {
+            Instantiate(aimSpherePfb, Vector3.zero, Quaternion.identity, aimParent.transform);
+        }
+
+        aimParent.SetActive(false);
+    }
+
+    #region Colour palette
     void SetBodyFlash (float timer, float min, float max) {
         float flashAmount = ExtensionMethods.Map(Mathf.Sin(bodyFlashTimer * Mathf.PI), -1, 1, bodyFlashMin, bodyFlashMax);
         SetBodyPaletteMix(flashAmount);
@@ -184,4 +281,5 @@ public class PlayerAnim : MonoBehaviour {
     void ResetColorPalette() {
         SetBodyPaletteMix(0);
     }
+    #endregion
 }
