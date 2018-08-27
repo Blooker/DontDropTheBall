@@ -1,42 +1,17 @@
 fileFormatVersion: 2
-guid: 869aa04908224ec458c93f67da6611cd
+guid: c5b1757b120c54d42b687efae46afac8
 ModelImporter:
   serializedVersion: 22
   fileIDToRecycleName:
-    100000: Armature
-    100002: //RootNode
-    100004: Chest
-    100006: Chest_001
-    100008: Foot_Left
-    100010: Hand_Left
-    100012: Head
-    100014: LowerArm_Left
-    100016: LowerLeg_Left
-    100018: Spine
-    100020: Spine_001
-    100022: UpperArm_Left
-    100024: UpperLeg_Left
-    100026: Virtual_Man
-    400000: Armature
-    400002: //RootNode
-    400004: Chest
-    400006: Chest_001
-    400008: Foot_Left
-    400010: Hand_Left
-    400012: Head
-    400014: LowerArm_Left
-    400016: LowerLeg_Left
-    400018: Spine
-    400020: Spine_001
-    400022: UpperArm_Left
-    400024: UpperLeg_Left
-    400026: Virtual_Man
-    2100000: wire_154154229
-    4300000: Virtual_Man
-    7400000: Default Take
-    9500000: //RootNode
-    13700000: Virtual_Man
-    2186277476908879412: ImportLogs
+    100000: //RootNode
+    100002: default
+    400000: //RootNode
+    400002: default
+    2100000: Material
+    2100002: defaultMat
+    2300000: default
+    3300000: default
+    4300000: default
   externalObjects: {}
   materials:
     importMaterials: 1
@@ -112,7 +87,7 @@ ModelImporter:
     hasExtraRoot: 0
     skeletonHasParents: 1
   lastHumanDescriptionAvatarSource: {instanceID: 0}
-  animationType: 2
+  animationType: 0
   humanoidOversampling: 1
   additionalBone: 0
   userData: 

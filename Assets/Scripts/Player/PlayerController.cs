@@ -190,13 +190,14 @@ public class PlayerController : MonoBehaviour {
 
         Vector3 dashDir = new Vector2(horiz, vert).normalized;
 
-        if (dashDir.magnitude == 0)
+        if (dashDir.magnitude == 0) {
             return;
+        }
 
         RaycastHit2D[] hits = new RaycastHit2D[1];
 
         dshStart = transform.position;
-        if (Physics2D.BoxCast(transform.position, transform.localScale, 0, dashDir, dshFilter, hits, dshDistance) > 0) {
+        if (Physics2D.BoxCast(transform.position, transform.localScale * 0.95f, 0, dashDir, dshFilter, hits, dshDistance) > 0) {
             //Debug.Log("Obstacle found");
             dshEnd = hits[0].point;
             dshColNormal = hits[0].normal;
@@ -216,7 +217,6 @@ public class PlayerController : MonoBehaviour {
             dshEnd += new Vector3(-startToEndDir.x * (transform.localScale.x / 1.5f), -startToEndDir.y * (transform.localScale.y / 1.5f));
 
             float startToEndDist = Vector3.Distance(dshStart, dshEnd);
-            Debug.Log(startToEndDist);
 
             if (startToEndDist < 3.5f) {
                 EndDash(dshEnd);
