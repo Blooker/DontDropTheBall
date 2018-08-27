@@ -267,7 +267,9 @@ public class PlayerController : MonoBehaviour {
     // Call when the player has just landed on the ground
     void Land () {
         ResetExtraJumps();
-        ResetDashes();
+
+        if (numDashes < maxDashes)
+            ResetDashes();
 
         if (rb.velocity.y < 0) {
             Vector3 vel = rb.velocity;

@@ -134,8 +134,9 @@ public class PlayerAnim : MonoBehaviour {
     }
 
     public void StartDash() {
-        bodyFlashTimer = -1;
-        SetBodyPaletteMix(1);
+        //bodyFlashTimer = -1;
+        //SetBodyPaletteMix(1);
+        bodyFlashTimer = 0;
         landFlashCount = 0;
     }
 
@@ -153,6 +154,8 @@ public class PlayerAnim : MonoBehaviour {
         bodyFlashMin = 0;
         bodyFlashMax = 1;
         bodyFlashSpeed = bodyFlashSpeedLand;
+
+        landFlashCount = 0;
 
         outOfDashes = false;
     }
