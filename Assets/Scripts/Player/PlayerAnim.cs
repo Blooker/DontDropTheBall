@@ -218,17 +218,18 @@ public class PlayerAnim : MonoBehaviour {
         aimParent.transform.localPosition = Vector3.zero;
 
         // Normal hit
-        float normSphereSize = aimSphereSize * aimLenNormalHit, normSphereGap = aimSphereGap * aimLenNormalHit;
-        Vector2 normSphereMinMax = aimSphereMinMax * aimLenNormalHit;
+        float normSphereSize = aimSphereSize /** aimLenNormalHit*/, normSphereGap = aimSphereGap * aimLenNormalHit;
+        Vector2 normSphereMinMax = aimSphereMinMax * aimLenNormalHit /*+ (aimDistFromPlayer * Vector2.up)*/;
 
         float normSphereUnit = normSphereSize + normSphereGap;
         float normSphereLen = normSphereMinMax.y - normSphereMinMax.x;
+        Debug.Log(normSphereUnit);
         float numNormUnits = normSphereLen / normSphereUnit;
+        
 
         int numNormSpheres = Mathf.FloorToInt(numNormUnits);
         float normGapLen = normSphereGap + ((normSphereLen - (numNormSpheres - 1) * normSphereUnit + normSphereSize) / (numNormSpheres - 1f));
 
-        Debug.Log(numNormSpheres);
 
         aimSphereNormDists = new float[numNormSpheres];
         if (numNormSpheres > 0) {
@@ -240,8 +241,8 @@ public class PlayerAnim : MonoBehaviour {
 
 
         // Strong hit
-        float strongSphereSize = aimSphereSize * aimLenStrongHit, strongSphereGap = aimSphereGap * aimLenStrongHit;
-        Vector2 strongSphereMinMax = aimSphereMinMax * aimLenStrongHit;
+        float strongSphereSize = aimSphereSize /** aimLenStrongHit*/, strongSphereGap = aimSphereGap * aimLenStrongHit;
+        Vector2 strongSphereMinMax = aimSphereMinMax * aimLenStrongHit /*+ (aimDistFromPlayer * Vector2.up)*/;
 
         float strongSphereUnit = strongSphereSize + strongSphereGap;
         float strongSphereLen = strongSphereMinMax.y - strongSphereMinMax.x;
@@ -259,13 +260,22 @@ public class PlayerAnim : MonoBehaviour {
         }
 
         GameObject newArrow = Instantiate(aimArrowPfb, Vector3.zero, Quaternion.identity, aimParent.transform);
-        newArrow.transform.localPosition = Vector3.zero;
+        newArrow.transform.localPosition = (normSphereMinMax.y + (aimLenNormalHit - normSphereMinMax.y)) * aimDistFromPlayer * Vector3.up;
         newArrow.transform.localScale = new Vector3(aimArrowPfb.transform.localScale.x/transform.localScale.x, aimArrowPfb.transform.localScale.y/transform.localScale.y, 1f);
         for (int i = 0; i < aimSphereStrongDists.Length; i++) {
-            Instantiate(aimSpherePfb, Vector3.zero, Quaternion.identity, aimParent.transform);
+            GameObject newSphere = Instantiate(aimSpherePfb, Vector3.zero, Quaternion.identity, aimParent.transform);
+            if (i > aimSphereNormDists.Length - 1) {
+                newSphere.SetActive(false);
+                continue;
+            }
+
+            newSphere.transform.localPosition = aimSphereNormDists[i] * Vector3.up;
+
+            newSphere.transform.localScale = Vector3.one * aimSphereSize;
         }
 
-        aimParent.SetActive(false);
+
+        aimParent.SetActive(true);
     }
 
     #region Colour palette
