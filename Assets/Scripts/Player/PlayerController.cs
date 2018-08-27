@@ -237,6 +237,10 @@ public class PlayerController : MonoBehaviour {
         isDashing = true;
     }
 
+    public void Aim (float horiz, float vert) {
+        playerAnim.Aim(horiz, vert);
+    }
+
     private void GroundJump () {
         if (isGrounded)
             numJumps += 1;

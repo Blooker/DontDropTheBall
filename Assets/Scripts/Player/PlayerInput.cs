@@ -96,6 +96,10 @@ public class PlayerInput : MonoBehaviour {
             }
         }
 
+        if (rightStick != Vector2.zero) {
+            playerController.Aim(rightStick.x, rightStick.y);
+        }
+
         bool jump = OnXInputButtonDown(prevState.Buttons.A, state.Buttons.A) || Input.GetKeyDown(KeyCode.Space);
         if (jump) {
             playerController.Jump();
