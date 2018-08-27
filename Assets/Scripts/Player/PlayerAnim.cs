@@ -149,7 +149,10 @@ public class PlayerAnim : MonoBehaviour {
         outOfDashes = true;
     }
 
-    public void ResetDashes () {
+    public void ResetDashes (bool groundDash) {
+        if (groundDash)
+            return;
+
         bodyFlashTimer = 1.5f;
         bodyFlashMin = 0;
         bodyFlashMax = 1;

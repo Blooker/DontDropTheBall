@@ -65,7 +65,7 @@ public class PlayerController : MonoBehaviour {
 
     void Start() {
         ResetExtraJumps();
-        ResetDashes();
+        ResetDashes(false);
 
         regGravityScale = rb.gravityScale;
 
@@ -78,15 +78,7 @@ public class PlayerController : MonoBehaviour {
 
     void FixedUpdate() {
         if (!isDashing) {
-            RaycastHit2D[] castResult = CheckGround();
-            bool touchedGround = castResult != null;
-
-            if (!isGrounded && touchedGround) {
-                isLanded = true;
-                lastLandPos = castResult[0].point;
-            }
-
-            isGrounded = touchedGround;
+            UpdateIsGrounded();
         }
     }
 
@@ -269,7 +261,7 @@ public class PlayerController : MonoBehaviour {
         ResetExtraJumps();
 
         if (numDashes < maxDashes)
-            ResetDashes();
+            ResetDashes(false);
 
         if (rb.velocity.y < 0) {
             Vector3 vel = rb.velocity;
@@ -284,7 +276,7 @@ public class PlayerController : MonoBehaviour {
 
     void StartWallSlide(bool wallOnRight, GameObject wall) {
         if(!isWallSliding)
-            Debug.Log("wall slide start on " + (wallOnRight ? "right" : "left"));
+            //Debug.Log("wall slide start on " + (wallOnRight ? "right" : "left"));
 
         isWallSliding = true;
         wallOnRightSide = wallOnRight;
@@ -310,15 +302,19 @@ public class PlayerController : MonoBehaviour {
 
         //transform.position = endPos;
 
-        if (isGrounded)
-            ResetDashes();
-
         dshLerpValue = 1;
 
         rb.simulated = true;
         rb.velocity = Vector3.zero;
 
-        playerAnim.EndDash();
+        UpdateIsGrounded();
+
+        if (isGrounded) {
+            ResetDashes(true);
+        }
+        else {
+            playerAnim.EndDash();
+        }
 
         isDashing = false;
     }
@@ -356,6 +352,18 @@ public class PlayerController : MonoBehaviour {
 
     //    return result;
     //}
+
+    void UpdateIsGrounded () {
+        RaycastHit2D[] castResult = CheckGround();
+        bool touchedGround = castResult != null;
+
+        if (!isGrounded && touchedGround) {
+            isLanded = true;
+            lastLandPos = castResult[0].point;
+        }
+
+        isGrounded = touchedGround;
+    }
 
     RaycastHit2D[] CheckGround () {
         //Vector2 circleCastOrigin;
@@ -417,9 +425,9 @@ public class PlayerController : MonoBehaviour {
         numJumps = maxJumps-1;
     }
 
-    void ResetDashes () {
+    void ResetDashes (bool groundDash) {
         numDashes = maxDashes;
-        playerAnim.ResetDashes();
+        playerAnim.ResetDashes(groundDash);
     }
 
 #if UNITY_EDITOR_WIN
