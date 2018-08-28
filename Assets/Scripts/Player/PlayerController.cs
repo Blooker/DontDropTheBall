@@ -12,6 +12,7 @@ public class PlayerController : MonoBehaviour {
 
     [Header("Ground Check")]
     [SerializeField] private /*float grCheckRadius*/ Vector2 grCheckScale;
+    [SerializeField] private Transform grCheckStart;
     [SerializeField] private float grCheckMaxYScale, grCheckMaxDownVel;
     [SerializeField] private float grCheckDist, grCheckMoveOffsetX;
     [SerializeField] private LayerMask whatIsGround;
@@ -323,40 +324,6 @@ public class PlayerController : MonoBehaviour {
         isDashing = false;
     }
 
-    // Gets the correct dash end position so that the player doesn't clip into terrain
-    //Vector3 GetDashEndPlayerPos (Vector3 endPos) {
-    //    Vector3 result;
-
-    //    if (dshCurrentSpeed != dshSpeed) {
-    //        //Vector3 startEndDir = (dshEnd - dshStart).normalized;
-    //        //Debug.Log(startEndDir);
-
-    //        Vector3 endOffset = Vector3.zero;
-    //        if (dshColNormal.y > 0.75f && dshColNormal.x > -0.75f && dshColNormal.x < 0.75f) {
-    //            // up code
-    //            endOffset = Vector3.up * (transform.localScale.y / 1.5f);
-    //        } else if (dshColNormal.y < -0.75f && dshColNormal.x > -0.75f && dshColNormal.x < 0.75f) {
-    //            // down code
-    //            endOffset = Vector3.down * (transform.localScale.y / 1.5f);
-    //        }
-
-    //        if (dshColNormal.x < -0.75f && dshColNormal.y > -0.75f && dshColNormal.y < 0.75f) {
-    //            // left code
-    //            endOffset = Vector3.left * (transform.localScale.x / 1.5f);
-    //        } else if (dshColNormal.x > 0.75f && dshColNormal.y > -0.75f && dshColNormal.y < 0.75f) {
-    //            // right code
-    //            endOffset = Vector3.right * (transform.localScale.x / 1.5f);
-    //        }
-
-    //        result = endPos + endOffset;
-    //    }
-    //    else {
-    //        result = endPos;
-    //    }
-
-    //    return result;
-    //}
-
     void UpdateIsGrounded () {
         RaycastHit2D[] castResult = CheckGround();
         bool touchedGround = castResult != null;
@@ -370,23 +337,16 @@ public class PlayerController : MonoBehaviour {
     }
 
     RaycastHit2D[] CheckGround () {
-        //Vector2 circleCastOrigin;
-        //if (moveInputX > 0) {
-        //    circleCastOrigin = new Vector2(transform.position.x - grCheckOffsetX, transform.position.y);
-        //} else {
-        //    circleCastOrigin = new Vector2(transform.position.x + grCheckOffsetX, transform.position.y);
-        //}
-
-        //bool result = (bool)Physics2D.CircleCast(circleCastOrigin, grCheckRadius, Vector2.down, grCheckDist, whatIsGround);
         RaycastHit2D[] hits = new RaycastHit2D[1];
 
         Vector3 _grCheckScale = grCheckScale;
         if (rb.velocity.y <= 0) {
             float yScale = ExtensionMethods.Map(rb.velocity.y, 0, -grCheckMaxDownVel, grCheckScale.y, grCheckMaxYScale);
+            Debug.Log(yScale);
             _grCheckScale = new Vector3(grCheckScale.x, yScale);
         }
 
-        if (Physics2D.BoxCast(transform.position, _grCheckScale, 0, Vector2.down, groundFilter, hits, grCheckDist) > 0) {
+        if (Physics2D.BoxCast(grCheckStart.position + Vector3.down*(_grCheckScale.y/2f), _grCheckScale, 0, Vector2.down, groundFilter, hits, _grCheckScale.y) > 0) {
             return hits;
         }
 
@@ -448,7 +408,7 @@ public class PlayerController : MonoBehaviour {
             }
         }
 
-        Gizmos.DrawCube(transform.position + (Vector3.down * grCheckDist), _grCheckScale);
+        Gizmos.DrawCube(grCheckStart.position + (Vector3.down * (_grCheckScale.y / 2f)), _grCheckScale);
 
         // Wall check
         Gizmos.color = Color.cyan;
