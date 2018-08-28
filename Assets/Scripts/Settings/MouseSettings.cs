@@ -49,6 +49,10 @@ public class MouseSettings : MonoBehaviour {
         SetCursorSize();
     }
 
+    public void SetVisible (bool _visible) {
+        mouseSphere.SetActive(_visible);
+    }
+
     void SetCursorSize () {
         mouseSphere.transform.localScale = Vector3.one * (1/videoSettings.GetWindowRes().y) * sphereResScalar;
     }

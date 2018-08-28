@@ -32,7 +32,8 @@ public class PlayerInput : MonoBehaviour {
 
     private void Start() {
         Cursor.visible = false;
-        Debug.Log(Input.mousePosition);
+        mouseSettings.SetCursorPos(Input.mousePosition, 0);
+        mouseSettings.SetVisible(true);
     }
 
     // Update is called once per frame
@@ -68,6 +69,12 @@ public class PlayerInput : MonoBehaviour {
 
         if (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0) {
             mouseSettings.SetCursorPos(Input.mousePosition, playerController.transform.position.z);
+            mouseSettings.SetVisible(true);
+        }
+
+        if (Input.GetMouseButtonDown(1)) {
+            playerController.StartDash(playerToMouse.x, playerToMouse.y);
+            mouseSettings.SetVisible(true);
         }
 
         // If left stick movement is being picked up
@@ -78,6 +85,7 @@ public class PlayerInput : MonoBehaviour {
                 playerController.StartDash(leftStick.x, leftStick.y);
             }
 
+            mouseSettings.SetVisible(false);
         } else if (leftDPAD || rightDPAD || upDPAD || downDPAD) {
             float xDir = 0;
             if (leftDPAD) {
@@ -100,22 +108,36 @@ public class PlayerInput : MonoBehaviour {
             if (OnXInputButtonDown(prevState.Buttons.LeftShoulder, state.Buttons.LeftShoulder)) {
                 playerController.StartDash(xDir, yDir);
             }
+
+            mouseSettings.SetVisible(false);
         }
-        else {
+        else if (horizMove != 0) {
             playerController.Move(horizMove);
-            if (Input.GetMouseButtonDown(1)) {
-                playerController.StartDash(playerToMouse.x, playerToMouse.y);
-            }
+
+            mouseSettings.SetVisible(true);
+        } else {
+            playerController.Move(0);
         }
 
         if (Input.GetMouseButton(0)) {
             playerController.Aim(playerToMouse.x, playerToMouse.y);
+            mouseSettings.SetVisible(true);
         } else if (rightStick != Vector2.zero) {
             playerController.Aim(rightStick.x, rightStick.y);
+            mouseSettings.SetVisible(false);
         }
 
-        bool jump = OnXInputButtonDown(prevState.Buttons.A, state.Buttons.A) || Input.GetKeyDown(KeyCode.Space);
-        if (jump) {
+        bool jumpPad = OnXInputButtonDown(prevState.Buttons.A, state.Buttons.A);
+        if (jumpPad) {
+            mouseSettings.SetVisible(false);
+        }
+
+        bool jumpKey = Input.GetKeyDown(KeyCode.Space);
+        if (jumpKey) {
+            mouseSettings.SetVisible(true);
+        }
+
+        if (jumpKey || jumpPad) {
             playerController.Jump();
         }
 
