@@ -33,7 +33,6 @@ public class PlayerInput : MonoBehaviour {
     private void Start() {
         Cursor.visible = false;
         mouseSettings.SetCursorPos(Input.mousePosition, 0);
-        mouseSettings.SetVisible(true);
     }
 
     // Update is called once per frame
