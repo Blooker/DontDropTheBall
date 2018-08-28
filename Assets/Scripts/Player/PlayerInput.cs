@@ -61,9 +61,14 @@ public class PlayerInput : MonoBehaviour {
 
         Vector2 leftStick = ApplyStickDeadzone(state.ThumbSticks.Left);
         Vector2 rightStick = ApplyStickDeadzone(state.ThumbSticks.Right);
+        Vector2 playerToMouse = mouseSettings.GetCursorWorldPoint() - playerController.transform.position;
 
         bool leftDPAD = state.DPad.Left == ButtonState.Pressed, rightDPAD = state.DPad.Right == ButtonState.Pressed;
         bool upDPAD = state.DPad.Up == ButtonState.Pressed, downDPAD = state.DPad.Down == ButtonState.Pressed;
+
+        if (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0) {
+            mouseSettings.SetCursorPos(Input.mousePosition, playerController.transform.position.z);
+        }
 
         // If left stick movement is being picked up
         if (leftStick != Vector2.zero) {
@@ -99,16 +104,13 @@ public class PlayerInput : MonoBehaviour {
         else {
             playerController.Move(horizMove);
             if (Input.GetMouseButtonDown(1)) {
-                Vector2 playerToMouse = mouseSettings.GetCursorWorldPoint(playerController.transform.position.z) - playerController.transform.position;
                 playerController.StartDash(playerToMouse.x, playerToMouse.y);
             }
         }
 
-        if (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0) {
-            mouseSettings.SetCursorPos(Input.mousePosition);
-        }
-
-        if (rightStick != Vector2.zero) {
+        if (Input.GetMouseButton(0)) {
+            playerController.Aim(playerToMouse.x, playerToMouse.y);
+        } else if (rightStick != Vector2.zero) {
             playerController.Aim(rightStick.x, rightStick.y);
         }
 

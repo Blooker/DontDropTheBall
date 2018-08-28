@@ -10,6 +10,7 @@ public class VideoSettings : MonoBehaviour {
 
     [SerializeField] private RenderTexture pixelRenderTexture;
     [SerializeField] private Camera pixelRenderCam;
+    [SerializeField] private Camera[] otherCams;
     [SerializeField] private RawImage canvasImage;
 
     [SerializeField] private int frameRate;
@@ -55,6 +56,10 @@ public class VideoSettings : MonoBehaviour {
         newTexture.filterMode = FilterMode.Point;
 
         pixelRenderCam.targetTexture = newTexture;
+        for (int i = 0; i < otherCams.Length; i++) {
+            otherCams[i].targetTexture = newTexture;
+        }
+
         canvasImage.texture = newTexture;
     }
 }

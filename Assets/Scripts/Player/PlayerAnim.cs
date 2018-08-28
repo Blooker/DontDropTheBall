@@ -50,6 +50,7 @@ public class PlayerAnim : MonoBehaviour {
 
     void Awake() {
         bodyMat = modelParent.transform.GetChild(0).GetComponent<MeshRenderer>().sharedMaterial;
+        SpawnAimIcons();
     }
 
     // Use this for initialization
@@ -58,7 +59,6 @@ public class PlayerAnim : MonoBehaviour {
             LookLeft();
 
         ResetColorPalette();
-        SpawnAimIcons();
     }
 
     void Update() {

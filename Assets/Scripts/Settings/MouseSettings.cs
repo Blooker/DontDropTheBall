@@ -5,11 +5,13 @@ using UnityEngine.UI;
 
 public class MouseSettings : MonoBehaviour {
 
-    [SerializeField] private Sprite mouseSprite;
-    [SerializeField] private Image mouseImage;
+    [SerializeField] private GameObject mouseSpherePfb;
+    [SerializeField] private float sphereResScalar;
     [SerializeField] private Color mouseColor;
 
-    private Vector2 cursorPos;
+    private GameObject mouseSphere;
+    private Vector2 cursorScreenPos;
+    private Vector3 cursorWorldPos;
     private VideoSettings videoSettings;
 
     private void Awake() {
@@ -18,33 +20,40 @@ public class MouseSettings : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        SetCursorSprite();
-        SetCursorColor();
+        SpawnCursor();
     }
 	
 	// Update is called once per frame
 	void Update () {
-        mouseImage.rectTransform.position = cursorPos;
+        mouseSphere.transform.position = cursorWorldPos;
     }
 
-    public Vector3 GetCursorWorldPoint (float playerPosZ) {
+    public Vector3 GetCursorWorldPoint () {
+        return cursorWorldPos;
+    }
+
+    public void SetCursorPos (Vector2 mousePos, float playerPosZ) {
+        cursorScreenPos = mousePos;
+        CalcCursorWorldPoint();
+    }
+
+    void CalcCursorWorldPoint () {
         float resScale = videoSettings.GetInternalResScale();
         Camera cam = videoSettings.GetPixelRenderCam();
-        Vector3 result = cam.ScreenToWorldPoint(new Vector3(cursorPos.x * resScale, cursorPos.y * resScale, playerPosZ-cam.transform.position.z));
-        result.z = playerPosZ;
-
-        return result;
+        cursorWorldPos = cam.ScreenToWorldPoint(new Vector3(cursorScreenPos.x * resScale, cursorScreenPos.y * resScale, -cam.transform.position.z));
+        cursorWorldPos.z = 0;
     }
 
-    public void SetCursorPos (Vector2 mousePos) {
-        cursorPos = mousePos;
+    void SpawnCursor() {
+        mouseSphere = Instantiate(mouseSpherePfb);
+        SetCursorSize();
     }
 
-    void SetCursorSprite () {
-        mouseImage.sprite = mouseSprite;
+    void SetCursorSize () {
+        mouseSphere.transform.localScale = Vector3.one * (1/videoSettings.GetWindowRes().y) * sphereResScalar;
     }
 
     void SetCursorColor () {
-        mouseImage.color = mouseColor;
+        //mouseImage.color = mouseColor;
     }
 }
