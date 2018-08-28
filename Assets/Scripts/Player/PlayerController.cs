@@ -342,7 +342,6 @@ public class PlayerController : MonoBehaviour {
         Vector3 _grCheckScale = grCheckScale;
         if (rb.velocity.y <= 0) {
             float yScale = ExtensionMethods.Map(rb.velocity.y, 0, -grCheckMaxDownVel, grCheckScale.y, grCheckMaxYScale);
-            Debug.Log(yScale);
             _grCheckScale = new Vector3(grCheckScale.x, yScale);
         }
 

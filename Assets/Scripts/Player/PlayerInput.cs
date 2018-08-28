@@ -9,6 +9,7 @@ public class PlayerInput : MonoBehaviour {
     [SerializeField] private float stickDeadzone;
 
     private PlayerController playerController;
+    private MouseSettings mouseSettings;
     private bool playerIndexSet = false;
 
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
@@ -26,10 +27,16 @@ public class PlayerInput : MonoBehaviour {
     // Use this for initialization
     void Awake () {
         playerController = GetComponent<PlayerController>();
+        mouseSettings = GetComponent<MouseSettings>();
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    private void Start() {
+        Cursor.visible = false;
+        Debug.Log(Input.mousePosition);
+    }
+
+    // Update is called once per frame
+    void Update () {
         if (playerController == null)
             return;
 
@@ -91,9 +98,14 @@ public class PlayerInput : MonoBehaviour {
         }
         else {
             playerController.Move(horizMove);
-            if ((horizMove != 0 || vertMove != 0) && (Input.GetKeyDown(KeyCode.LeftShift) || Input.GetKeyDown(KeyCode.RightShift))) {
-                playerController.StartDash(horizMove, vertMove);
+            if (Input.GetMouseButtonDown(1)) {
+                Vector2 playerToMouse = mouseSettings.GetCursorWorldPoint(playerController.transform.position.z) - playerController.transform.position;
+                playerController.StartDash(playerToMouse.x, playerToMouse.y);
             }
+        }
+
+        if (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0) {
+            mouseSettings.SetCursorPos(Input.mousePosition);
         }
 
         if (rightStick != Vector2.zero) {

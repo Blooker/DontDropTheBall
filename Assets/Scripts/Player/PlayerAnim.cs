@@ -211,8 +211,6 @@ public class PlayerAnim : MonoBehaviour {
         float worldMinPos = ExtensionMethods.Map(aimSphereMinMax.x, 0, 1, aimDistFromPlayer, aimDistFromPlayer + aimLength);
         float worldMaxPos = ExtensionMethods.Map(aimSphereMinMax.y, 0, 1, aimDistFromPlayer, aimDistFromPlayer + aimLength);
 
-        Debug.Log(worldMinPos + ", " + worldMaxPos);
-
         float lerpValue = 0;
         for (int i = 0; i < numSpheres; i++) {
             GameObject newSphere = Instantiate(aimSpherePfb, aimParent.transform);
@@ -222,7 +220,6 @@ public class PlayerAnim : MonoBehaviour {
             newSphere.transform.localPosition = aimSphereDists[i] * Vector3.up;
                 
             lerpValue += 1f / (numSpheres - 1);
-            Debug.Log(lerpValue);
         }
 
         aimParent.SetActive(false);
