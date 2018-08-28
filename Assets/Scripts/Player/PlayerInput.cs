@@ -32,6 +32,8 @@ public class PlayerInput : MonoBehaviour {
 
     private void Start() {
         Cursor.visible = false;
+        Cursor.lockState = CursorLockMode.Confined;
+
         mouseSettings.SetCursorPos(Input.mousePosition, 0);
     }
 
