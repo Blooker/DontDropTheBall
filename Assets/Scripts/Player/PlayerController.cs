@@ -30,7 +30,6 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private LayerMask whatIsCeiling;
 
     [Header("Wall Check")]
-    [SerializeField] private float wallCheckRadius;
     [SerializeField] private float wallCheckDist;
     [SerializeField] private float wallCheckOffsetY;
     [SerializeField] private LayerMask whatIsWall;
@@ -415,7 +414,6 @@ public class PlayerController : MonoBehaviour {
 
     // Checks for wall to left of player. Returns wall object that is in contact with the player.
     GameObject CheckWallLeft () {
-        //RaycastHit2D hit = Physics2D.CircleCast(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), wallCheckRadius, Vector2.left, wallCheckDist, whatIsWall);
         RaycastHit2D hitUp = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), Vector2.left, wallCheckDist, whatIsWall);
         RaycastHit2D hitDown = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y - wallCheckOffsetY), Vector2.left, wallCheckDist, whatIsWall);
         GameObject result;
@@ -431,7 +429,6 @@ public class PlayerController : MonoBehaviour {
 
     // Checks for wall to right of player. Returns wall object that is in contact with the player.
     GameObject CheckWallRight() {
-        //RaycastHit2D hit = Physics2D.CircleCast(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), wallCheckRadius, Vector2.right, wallCheckDist, whatIsWall);
         RaycastHit2D hitUp = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), Vector2.right, wallCheckDist, whatIsWall);
         RaycastHit2D hitDown = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y - wallCheckOffsetY), Vector2.right, wallCheckDist, whatIsWall);
         GameObject result;
@@ -487,17 +484,6 @@ public class PlayerController : MonoBehaviour {
 
         Gizmos.DrawLine(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), new Vector2(transform.position.x + wallCheckDist, transform.position.y + wallCheckOffsetY));
         Gizmos.DrawLine(new Vector2(transform.position.x, transform.position.y - wallCheckOffsetY), new Vector2(transform.position.x + wallCheckDist, transform.position.y - wallCheckOffsetY));
-
-        //Gizmos.DrawWireSphere(new Vector3(transform.position.x - wallCheckDist, transform.position.y + wallCheckOffsetY), wallCheckRadius);
-        //Gizmos.DrawWireSphere(new Vector3(transform.position.x + wallCheckDist, transform.position.y + wallCheckOffsetY), wallCheckRadius);
-
-        // Dash stop check
-        Gizmos.color = Color.white;
-        //Gizmos.DrawCube(transform.position - Vector3.right * (transform.localScale.x / 2f), new Vector3(dshStopCheckScale.x, transform.localScale.y));
-        //Gizmos.DrawCube(transform.position + Vector3.right * (transform.localScale.x / 2f), new Vector3(dshStopCheckScale.x, transform.localScale.y));
-
-        //Gizmos.DrawCube(transform.position - Vector3.up * (transform.localScale.y / 2f), new Vector3(transform.localScale.x, dshStopCheckScale.y));
-        //Gizmos.DrawCube(transform.position + Vector3.up * (transform.localScale.y / 2f), new Vector3(transform.localScale.x, dshStopCheckScale.y));
     }
 #endif
 
