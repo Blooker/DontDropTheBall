@@ -189,4 +189,5 @@ Shader "kode80/PixelRender/PixelArtShader_StencilRead"
 		}
 	}
 	CustomEditor "kode80.PixelRender.PixelArtShaderEditor"
+	Fallback "Diffuse"
 }
