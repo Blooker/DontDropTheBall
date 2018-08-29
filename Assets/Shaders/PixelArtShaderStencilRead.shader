@@ -27,18 +27,17 @@ Shader "kode80/PixelRender/PixelArtShader_StencilRead"
 		_DitherThreshold ( "Dither Threshold", Range( 0.0, 1.0)) = 0.5
 		_PaletteMix ( "Palette Mix", Range( 0.0, 1.0)) = 0.0
 		_Palette2Tex ("Palette 2", 2D) = "white" {}
+		_RenderQueue ( "RenderQueue", Range( 0.0, 2.0)) = 0.0
 	}
 	SubShader
 	{
 		Tags { "RenderType"="Opaque" }
 		LOD 100
-		ZTest Always
 
 		Stencil
         {
             Ref 1
             Comp Equal
-            
         }
 
 		Pass
@@ -91,6 +90,7 @@ Shader "kode80/PixelRender/PixelArtShader_StencilRead"
 			float3 _LightDir;
 			float _DitherThreshold;
 			float _PaletteMix;
+			float _RenderQueue;
 			
 			v2f vert (input_t v)
 			{
