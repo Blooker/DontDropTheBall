@@ -29,7 +29,7 @@ public class PlayerAnim : MonoBehaviour {
     [SerializeField] private int numSpheres;
     [SerializeField] private Vector2 aimSphereMinMax;
 
-    private Material bodyMat;
+    private Material bodyMatReg, bodyMatStencil;
 
     private ParticleSystem jumpSmoke;
     private float jumpSmokeTimer = 0;
@@ -49,7 +49,9 @@ public class PlayerAnim : MonoBehaviour {
     private bool isAiming = false;
 
     void Awake() {
-        bodyMat = modelParent.transform.GetChild(0).GetComponent<MeshRenderer>().sharedMaterial;
+        bodyMatReg = modelParent.transform.GetChild(0).GetChild(0).GetComponent<MeshRenderer>().sharedMaterial;
+        bodyMatStencil = modelParent.transform.GetChild(1).GetChild(0).GetComponent<MeshRenderer>().sharedMaterial;
+
         SpawnAimIcons();
     }
 
@@ -232,7 +234,8 @@ public class PlayerAnim : MonoBehaviour {
     }
 
     void SetBodyPaletteMix(float mixAmount) {
-        bodyMat.SetFloat("_PaletteMix", mixAmount);
+        bodyMatReg.SetFloat("_PaletteMix", mixAmount);
+        bodyMatStencil.SetFloat("_PaletteMix", mixAmount);
     }
 
     void ResetColorPalette() {
