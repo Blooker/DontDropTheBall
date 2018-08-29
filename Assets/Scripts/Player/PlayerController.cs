@@ -7,15 +7,27 @@ using UnityEngine;
 [RequireComponent(typeof(PlayerAnim))]
 public class PlayerController : MonoBehaviour {
 
+    //DEBUG
+    public bool pauseOnJump = false;
+    // DEBUG
+
     [SerializeField] private float speed, acceleration, jumpForce;
     [SerializeField] private float maxJumps = 2;
 
+    [Header("Vert Checks (Ground/Ceiling)")]
+    [SerializeField] private Vector2 vertCheckScale;
+    [SerializeField] private float vertCheckMaxYScale, vertCheckMaxVel;
+
     [Header("Ground Check")]
-    [SerializeField] private /*float grCheckRadius*/ Vector2 grCheckScale;
     [SerializeField] private Transform grCheckStart;
-    [SerializeField] private float grCheckMaxYScale, grCheckMaxDownVel;
-    [SerializeField] private float grCheckDist, grCheckMoveOffsetX;
+    [SerializeField] private float grCheckMaxVel;
+    [SerializeField] private float grCheckMoveOffsetX;
     [SerializeField] private LayerMask whatIsGround;
+
+    [Header("Ceiling Check")]
+    [SerializeField] private Transform ceilCheckStart;
+    [SerializeField] private float ceilCheckMaxVel;
+    [SerializeField] private LayerMask whatIsCeiling;
 
     [Header("Wall Check")]
     [SerializeField] private float wallCheckRadius;
@@ -37,8 +49,8 @@ public class PlayerController : MonoBehaviour {
     private float moveInputX;
 
     private float numJumps;
-    private ContactFilter2D groundFilter;
-    private Vector3 lastLandPos;
+    private ContactFilter2D groundFilter, ceilFilter;
+    private Vector3 lastLandPos, lastCeilHitPos;
 
     private float regGravityScale;
 
@@ -51,7 +63,7 @@ public class PlayerController : MonoBehaviour {
     private float dshLerpValue = 1, dshLerpLimit = 1f, dshCurrentSpeed;
     private ContactFilter2D dshFilter;
 
-    private bool isGrounded = false, isLanded = false;
+    private bool isGrounded = false, isLanded = false, isOnCeiling = false, isHitCeiling = false;
     private bool isWallSliding = false, wallOnRightSide = false;
     private bool isDashing = false;
 
@@ -71,15 +83,17 @@ public class PlayerController : MonoBehaviour {
         regGravityScale = rb.gravityScale;
 
         groundFilter = new ContactFilter2D();
+        ceilFilter = new ContactFilter2D();
         dshFilter = new ContactFilter2D();
 
         groundFilter.SetLayerMask(whatIsGround);
+        ceilFilter.SetLayerMask(whatIsCeiling);
         dshFilter.SetLayerMask(whatStopsDash);
     }
 
     void FixedUpdate() {
         if (!isDashing) {
-            UpdateIsGrounded();
+            UpdateVertChecks();
         }
     }
 
@@ -87,6 +101,9 @@ public class PlayerController : MonoBehaviour {
     void Update() {
         if (isLanded)
             Land();
+
+        if (isHitCeiling)
+            HitCeiling();
 
         if (isWallSliding && rb.velocity.y <= 0) {
             rb.AddForce(Vector2.up * wFallSpeedDecrease * Time.deltaTime);
@@ -175,6 +192,9 @@ public class PlayerController : MonoBehaviour {
     }
 
     public void Jump() {
+        if (pauseOnJump)
+            Debug.Break();
+
         if (isWallSliding) {
             WallJump();
         } else {
@@ -261,7 +281,7 @@ public class PlayerController : MonoBehaviour {
         EndWallSlide();
     }
 
-    // Call when the player has just landed on the ground
+    // Called when the player has just landed on the ground
     void Land () {
         ResetExtraJumps();
 
@@ -277,6 +297,19 @@ public class PlayerController : MonoBehaviour {
         }
 
         isLanded = false;
+    }
+
+    // Called when the player has just touched the ceiling
+    void HitCeiling () {
+        if (rb.velocity.y > 0) {
+            Vector3 vel = rb.velocity;
+            vel.y = 0;
+            rb.velocity = vel;
+
+            transform.position = new Vector3(transform.position.x, lastCeilHitPos.y - 0.1f) + (Vector3.down * (transform.localScale.y / 2f));
+        }
+
+        isHitCeiling = false;
     }
 
     void StartWallSlide(bool wallOnRight, GameObject wall) {
@@ -312,7 +345,7 @@ public class PlayerController : MonoBehaviour {
         rb.simulated = true;
         rb.velocity = Vector3.zero;
 
-        UpdateIsGrounded();
+        UpdateVertChecks();
 
         if (isGrounded) {
             ResetDashes(true);
@@ -324,28 +357,56 @@ public class PlayerController : MonoBehaviour {
         isDashing = false;
     }
 
-    void UpdateIsGrounded () {
-        RaycastHit2D[] castResult = CheckGround();
-        bool touchedGround = castResult != null;
+    void UpdateVertChecks () {
+        // Ground
+        RaycastHit2D[] groundResult = CheckGround();
+        bool touchedGround = groundResult != null;
 
         if (!isGrounded && touchedGround) {
             isLanded = true;
-            lastLandPos = castResult[0].point;
+            lastLandPos = groundResult[0].point;
         }
 
         isGrounded = touchedGround;
+
+        // Ceiling
+        RaycastHit2D[] ceilResult = CheckCeiling();
+        bool touchedCeiling = ceilResult != null;
+
+        if (!isOnCeiling && touchedCeiling) {
+            isHitCeiling = true;
+            lastCeilHitPos = ceilResult[0].point;
+        }
+
+        isOnCeiling = touchedCeiling;
     }
 
     RaycastHit2D[] CheckGround () {
         RaycastHit2D[] hits = new RaycastHit2D[1];
 
-        Vector3 _grCheckScale = grCheckScale;
+        Vector3 _grCheckScale = vertCheckScale;
         if (rb.velocity.y <= 0) {
-            float yScale = ExtensionMethods.Map(rb.velocity.y, 0, -grCheckMaxDownVel, grCheckScale.y, grCheckMaxYScale);
-            _grCheckScale = new Vector3(grCheckScale.x, yScale);
+            float yScale = ExtensionMethods.Map(rb.velocity.y, 0, -grCheckMaxVel, vertCheckScale.y, vertCheckMaxYScale);
+            _grCheckScale = new Vector3(vertCheckScale.x, yScale);
         }
 
         if (Physics2D.BoxCast(grCheckStart.position + Vector3.down*(_grCheckScale.y/2f), _grCheckScale, 0, Vector2.down, groundFilter, hits, _grCheckScale.y) > 0) {
+            return hits;
+        }
+
+        return null;
+    }
+
+    RaycastHit2D[] CheckCeiling() {
+        RaycastHit2D[] hits = new RaycastHit2D[1];
+
+        Vector3 _ceilCheckScale = vertCheckScale;
+        if (rb.velocity.y >= 0) {
+            float yScale = ExtensionMethods.Map(rb.velocity.y, 0, ceilCheckMaxVel, vertCheckScale.y, vertCheckMaxYScale);
+            _ceilCheckScale = new Vector3(vertCheckScale.x, yScale);
+        }
+
+        if (Physics2D.BoxCast(ceilCheckStart.position + Vector3.up * (_ceilCheckScale.y / 2f), _ceilCheckScale, 0, Vector2.up, ceilFilter, hits, _ceilCheckScale.y) > 0) {
             return hits;
         }
 
@@ -397,17 +458,26 @@ public class PlayerController : MonoBehaviour {
     void OnDrawGizmosSelected() {
         // Ground check
         Gizmos.color = Color.yellow;
-        //Gizmos.DrawWireSphere(new Vector3(moveInputX > 0 ? transform.position.x - grCheckOffsetX : transform.position.x + grCheckOffsetX, transform.position.y - grCheckDist), grCheckRadius);
-
-        Vector3 _grCheckScale = grCheckScale;
+        Vector3 _grCheckScale = vertCheckScale;
         if (EditorApplication.isPlaying && rb != null) {
             if (rb.velocity.y <= 0) {
-                float yScale = ExtensionMethods.Map(rb.velocity.y, 0, -grCheckMaxDownVel, grCheckScale.y, grCheckMaxYScale);
-                _grCheckScale = new Vector3(grCheckScale.x, yScale);
+                float yScale = ExtensionMethods.Map(rb.velocity.y, 0, -grCheckMaxVel, vertCheckScale.y, vertCheckMaxYScale);
+                _grCheckScale = new Vector3(vertCheckScale.x, yScale);
             }
         }
 
         Gizmos.DrawCube(grCheckStart.position + (Vector3.down * (_grCheckScale.y / 2f)), _grCheckScale);
+
+        // Ceiling check
+        Vector3 _ceilCheckScale = vertCheckScale;
+        if (EditorApplication.isPlaying && rb != null) {
+            if (rb.velocity.y >= 0) {
+                float yScale = ExtensionMethods.Map(rb.velocity.y, 0, ceilCheckMaxVel, vertCheckScale.y, vertCheckMaxYScale);
+                _ceilCheckScale = new Vector3(vertCheckScale.x, yScale);
+            }
+        }
+
+        Gizmos.DrawCube(ceilCheckStart.position + (Vector3.up * (_ceilCheckScale.y / 2f)), _ceilCheckScale);
 
         // Wall check
         Gizmos.color = Color.cyan;
