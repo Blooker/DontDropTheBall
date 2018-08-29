@@ -183,7 +183,7 @@ public class PlayerController : MonoBehaviour {
     }
 
     public void StartDash(float horiz, float vert) {
-        if (numDashes <= 0)
+        if (isDashing || numDashes <= 0)
             return;
 
         if (isGrounded && vert < 0)
