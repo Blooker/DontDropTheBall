@@ -9,30 +9,26 @@ public class VideoSettings : MonoBehaviour {
     [SerializeField] private float internalResScale = 0.5f;
 
     [SerializeField] private RenderTexture pixelRenderTexture;
-    [SerializeField] private Camera pixelRenderCam;
-    [SerializeField] private Camera[] otherCams;
     [SerializeField] private RawImage canvasImage;
 
     [SerializeField] private int frameRate;
 
     private Vector2 windowRes, internalRes;
+    private PlayerManager playerManager;
 
-	// Use this for initialization
-	void Start () {
-        QualitySettings.vSyncCount = 0;
-       
-        //Application.targetFrameRate = 60;
-
+    private void Awake() {
+        playerManager = GetComponent<PlayerManager>();
         SetResolution(Screen.width, Screen.height);
+    }
+
+    // Use this for initialization
+    void Start () {
+        QualitySettings.vSyncCount = 0;
 	}
 	
 	// Update is called once per frame
 	void Update () {
         Application.targetFrameRate = frameRate;
-    }
-
-    public Camera GetPixelRenderCam () {
-        return pixelRenderCam;
     }
 
     public Vector2 GetWindowRes() {
@@ -47,17 +43,20 @@ public class VideoSettings : MonoBehaviour {
         windowRes = new Vector2(width, height);
         Screen.SetResolution(width, height, Screen.fullScreen);
 
-        if (pixelRenderCam.targetTexture != null) {
-            pixelRenderCam.targetTexture.Release();
+        Camera[] allCams = playerManager.GetAllPlayerCams();
+
+        for (int i = 0; i < allCams.Length; i++) {
+            if (allCams[i].targetTexture != null) {
+                allCams[i].targetTexture.Release();
+            }
         }
 
         RenderTexture newTexture = new RenderTexture(Mathf.FloorToInt(width * internalResScale), Mathf.FloorToInt(height * internalResScale), 24, RenderTextureFormat.RGB111110Float);
         newTexture.useMipMap = false;
         newTexture.filterMode = FilterMode.Point;
 
-        pixelRenderCam.targetTexture = newTexture;
-        for (int i = 0; i < otherCams.Length; i++) {
-            otherCams[i].targetTexture = newTexture;
+        for (int i = 0; i < allCams.Length; i++) {
+            allCams[i].targetTexture = newTexture;
         }
 
         canvasImage.texture = newTexture;

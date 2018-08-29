@@ -5,6 +5,7 @@ using UnityEngine;
 public class PlayerManager : MonoBehaviour {
 
     [SerializeField] private GameObject playerPfb;
+    [SerializeField] private CameraController playerCam;
     [SerializeField] private Vector2 startPos;
 
     private PlayerController player;
@@ -27,6 +28,14 @@ public class PlayerManager : MonoBehaviour {
         if (player.transform.position.y < -15.4) {
             RespawnPlayer();
         }
+    }
+
+    public Camera GetMainPlayerCam () {
+        return playerCam.GetMainCam();
+    }
+
+    public Camera[] GetAllPlayerCams() {
+        return playerCam.GetAllCams();
     }
 
     // Kills the player if they exist, then instantiates a new one

@@ -1,4 +1,4 @@
-﻿using System.Collections;
+﻿    using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,9 +13,12 @@ public class MouseSettings : MonoBehaviour {
     private GameObject mouseSphere;
     private Vector2 cursorScreenPos;
     private Vector3 cursorWorldPos, mouseColOffset;
+
+    private PlayerManager playerManager;
     private VideoSettings videoSettings;
 
     private void Awake() {
+        playerManager = GetComponent<PlayerManager>();
         videoSettings = GetComponent<VideoSettings>();
     }
 
@@ -43,10 +46,10 @@ public class MouseSettings : MonoBehaviour {
 
     void CalcCursorWorldPoint () {
         float resScale = videoSettings.GetInternalResScale();
-        Camera cam = videoSettings.GetPixelRenderCam();
+        Camera cam = playerManager.GetMainPlayerCam();
 
         if (mouseColOffset == Vector3.zero) {
-            mouseColOffset = mouseCollider.transform.position - videoSettings.GetPixelRenderCam().transform.position;
+            mouseColOffset = mouseCollider.transform.position - cam.transform.position;
         }
 
         mouseCollider.transform.position = cam.transform.position + mouseColOffset;
