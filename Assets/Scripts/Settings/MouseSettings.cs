@@ -14,11 +14,11 @@ public class MouseSettings : MonoBehaviour {
     private Vector2 cursorScreenPos;
     private Vector3 cursorWorldPos, mouseColOffset;
 
-    private PlayerManager playerManager;
+    private EntityManager playerManager;
     private VideoSettings videoSettings;
 
     private void Awake() {
-        playerManager = GetComponent<PlayerManager>();
+        playerManager = GetComponent<EntityManager>();
         videoSettings = GetComponent<VideoSettings>();
     }
 

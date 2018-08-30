@@ -14,10 +14,10 @@ public class VideoSettings : MonoBehaviour {
     [SerializeField] private int frameRate;
 
     private Vector2 windowRes, internalRes;
-    private PlayerManager playerManager;
+    private EntityManager playerManager;
 
     private void Awake() {
-        playerManager = GetComponent<PlayerManager>();
+        playerManager = GetComponent<EntityManager>();
         SetResolution(Screen.width, Screen.height);
     }
 
