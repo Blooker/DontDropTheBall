@@ -37,8 +37,8 @@ Shader "kode80/PixelRender/PixelArtShader_StencilWrite"
 		Stencil
         {
             Ref 1
-            Pass replace
-        }
+            Pass Replace
+		}
 		ColorMask 0
 
 		Pass
