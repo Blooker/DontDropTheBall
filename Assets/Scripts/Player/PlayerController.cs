@@ -451,7 +451,7 @@ public class PlayerController : MonoBehaviour {
         playerAnim.ResetDashes(groundDash);
     }
 
-#if UNITY_EDITOR_WIN
+# if UNITY_EDITOR_WIN
     void OnDrawGizmosSelected() {
         // Ground check
         Gizmos.color = Color.yellow;

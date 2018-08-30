@@ -11,6 +11,8 @@ public class EntityManager : MonoBehaviour {
     private PlayerController player;
     private BallController ball;
 
+    private Collider2D playerColl, ballColl;
+
     private PlayerInput playerInput;
 
     void Awake() {
@@ -37,8 +39,11 @@ public class EntityManager : MonoBehaviour {
             return;
 
         if (ball.transform.position.y < -15.4) {
-            RespawnPlayer();
+            RespawnBall();
         }
+
+        if (playerColl != null && ballColl != null)
+            Physics2D.IgnoreCollision(playerColl, ballColl);
     }
 
     public Camera GetMainPlayerCam () {
@@ -55,11 +60,15 @@ public class EntityManager : MonoBehaviour {
             DestroyPlayer ();
 
         player = Instantiate(playerPfb, playerStartPos, Quaternion.identity).GetComponent<PlayerController>();
+        playerColl = player.GetComponent<Collider2D>();
+
         playerInput.SetPlayer(player);
     }
 
     // Destroys player and safely removes all references to it
     public void DestroyPlayer () {
+        playerColl = null;
+
         playerInput.SetPlayer(null);
         Destroy(player.gameObject);
     }
@@ -70,10 +79,12 @@ public class EntityManager : MonoBehaviour {
             DestroyBall();
 
         ball = Instantiate(ballPfb, ballStartPos, Quaternion.identity).GetComponent<BallController>();
+        ballColl = ball.GetComponent<Collider2D>();
     }
 
     // Destroys player and safely removes all references to it
     public void DestroyBall () {
+        ballColl = null;
         Destroy(ball.gameObject);
     }
 
