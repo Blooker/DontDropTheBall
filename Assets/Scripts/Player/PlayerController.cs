@@ -77,7 +77,7 @@ public class PlayerController : MonoBehaviour {
 
     void Start() {
         ResetExtraJumps();
-        ResetDashes(false);
+        ResetDashes(true);
 
         regGravityScale = rb.gravityScale;
 
@@ -285,7 +285,7 @@ public class PlayerController : MonoBehaviour {
         ResetExtraJumps();
 
         if (numDashes < maxDashes)
-            ResetDashes(false);
+            ResetDashes(true);
 
         if (rb.velocity.y < 0) {
             Vector3 vel = rb.velocity;
@@ -347,10 +347,9 @@ public class PlayerController : MonoBehaviour {
         UpdateVertChecks();
 
         if (isGrounded) {
-            ResetDashes(true);
-        }
-        else {
-            playerAnim.EndDash();
+            ResetDashes(false);
+        } else {
+            playerAnim.EndDash(numDashes > 0);
         }
 
         isDashing = false;
@@ -446,9 +445,9 @@ public class PlayerController : MonoBehaviour {
         numJumps = maxJumps-1;
     }
 
-    void ResetDashes (bool groundDash) {
+    void ResetDashes (bool playAnimation) {
         numDashes = maxDashes;
-        playerAnim.ResetDashes(groundDash);
+        playerAnim.ResetDashes(playAnimation);
     }
 
 # if UNITY_EDITOR_WIN

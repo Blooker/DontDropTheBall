@@ -160,7 +160,10 @@ public class PlayerAnim : MonoBehaviour {
         landFlashCount = 0;
     }
 
-    public void EndDash() {
+    public void EndDash(bool dashesLeft) {
+        if (dashesLeft)
+            return;
+
         bodyFlashTimer = 0.5f;
         bodyFlashMin = bodyFlashMinMax.x;
         bodyFlashMax = bodyFlashMinMax.y;
@@ -169,8 +172,8 @@ public class PlayerAnim : MonoBehaviour {
         outOfDashes = true;
     }
 
-    public void ResetDashes (bool groundDash) {
-        if (groundDash)
+    public void ResetDashes (bool playAnim) {
+        if (!playAnim)
             return;
 
         bodyFlashTimer = 1.5f;
