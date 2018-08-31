@@ -9,8 +9,7 @@ public class BallController : MonoBehaviour {
     [Header("Bounce")]
     [SerializeField] private float bounceAmount = 0.8f;
     [SerializeField] private LayerMask canBounceOff;
-    [SerializeField] private float bCheckMaxDist = 5;
-    [SerializeField] private float bCheckMinMagnitude = 5, bCheckMaxMagnitude = 150;
+    [SerializeField] private float restHitCheckDist = 0.2f;
 
     private Vector2 lastVel;
     private bool isBouncing = true;
@@ -46,7 +45,7 @@ public class BallController : MonoBehaviour {
         
 
         RaycastHit2D[] hits = new RaycastHit2D[1];
-        if (Physics2D.CircleCast(transform.position, transform.localScale.x/2f, dir, bounceFilter, hits, 0.2f) > 0) {
+        if (Physics2D.CircleCast(transform.position, transform.localScale.x/2f, dir, bounceFilter, hits, restHitCheckDist) > 0) {
             Bounce(hits[0].normal, hits[0].point, dir * force, 1);
         } else {
             rb.velocity = dir * force;

@@ -47,6 +47,8 @@ public class PlayerController : MonoBehaviour {
 
     [Header("Attack")]
     [SerializeField] private float atkForce;
+    [SerializeField] private float atkMaxPauseTime;
+    [SerializeField] private int maxAtkDashesValue = 2;
     [SerializeField] private float minAtkDashSpeed = 5;    
     [SerializeField] private float maxAtkDashDist = 5f;    
 
@@ -73,7 +75,7 @@ public class PlayerController : MonoBehaviour {
     private Vector2 lastAimDir;
 
     private Vector2 atkDir;
-    private int numAirAttacks;
+    private int atkDashCounter, maxAtkDashes;
     private float atkDashDist, atkDashSpeed;
     private bool canAttack = true;
 
@@ -264,14 +266,15 @@ public class PlayerController : MonoBehaviour {
     public void Attack () {
         atkDir = lastAimDir;
 
-        if (numAirAttacks < 2) {
-            atkDashDist = maxAtkDashDist / (numAirAttacks+1);
-            atkDashSpeed = minAtkDashSpeed * (numAirAttacks+1);
+        if (isGrounded && IsTouchingBall()) {
+            HitBall();
+        } else if (atkDashCounter < maxAtkDashes) {
+            atkDashDist = maxAtkDashDist / (1.5f*(atkDashCounter+1));
+            atkDashSpeed = minAtkDashSpeed * (1.5f*(atkDashCounter+1));
 
             lastDashType = DashType.Attack;
             StartDash(lastAimDir.x, lastAimDir.y, atkDashDist, atkDashSpeed);
         } else if (IsTouchingBall()) {
-            Debug.Log("No dash, hit ball");
             HitBall();
         }
     }
@@ -415,12 +418,10 @@ public class PlayerController : MonoBehaviour {
         switch (lastDashType) {
             case DashType.Move:
                 numMoveDashes -= 1;
+                ResetAirAttacks();
                 break;
             case DashType.Attack:
-                if (!isHitBall) {
-                    numAirAttacks += 1;
-                }
-                
+                atkDashCounter += 1;
                 canAttack = true;
                 break;
             default:
@@ -454,7 +455,7 @@ public class PlayerController : MonoBehaviour {
             ResetDashes(true);
         }
 
-        ResetAirAttacks();
+        maxAtkDashes += 1;
         isHitBall = true;
     }
 
@@ -558,7 +559,8 @@ public class PlayerController : MonoBehaviour {
     }
 
     void ResetAirAttacks () {
-        numAirAttacks = 0;
+        atkDashCounter = 0;
+        maxAtkDashes = maxAtkDashesValue;
     }
 
 # if UNITY_EDITOR_WIN

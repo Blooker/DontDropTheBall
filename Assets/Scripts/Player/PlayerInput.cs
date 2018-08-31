@@ -63,7 +63,8 @@ public class PlayerInput : MonoBehaviour {
         prevState = state;
         state = GamePad.GetState(playerIndex);
 
-        Vector2 leftStick = ApplyStickDeadzone(state.ThumbSticks.Left, leftStickDeadzone);
+        //Vector2 leftStick = ApplyStickDeadzone(state.ThumbSticks.Left, leftStickDeadzone);
+        Vector2 leftStick = new Vector2(Input.GetAxisRaw("LeftStickX"), Input.GetAxisRaw("LeftStickY"));
         Vector2 rightStick = new Vector2(Input.GetAxisRaw("RightStickX"), -Input.GetAxisRaw("RightStickY"));
         Vector2 playerToMouse = mouseSettings.GetCursorWorldPoint() - playerController.transform.position;
 
@@ -81,7 +82,7 @@ public class PlayerInput : MonoBehaviour {
         }
 
         // If left stick movement is being picked up
-        if (leftStick != Vector2.zero) {
+        if (leftStick.magnitude >= 0.35f) {
             playerController.Move(leftStick.x);
 
             if (OnXInputButtonDown(prevState.Buttons.LeftShoulder, state.Buttons.LeftShoulder)) {
