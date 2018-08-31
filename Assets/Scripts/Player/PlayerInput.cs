@@ -64,7 +64,7 @@ public class PlayerInput : MonoBehaviour {
         state = GamePad.GetState(playerIndex);
 
         Vector2 leftStick = ApplyStickDeadzone(state.ThumbSticks.Left, leftStickDeadzone);
-        Vector2 rightStick = ApplyStickDeadzone(state.ThumbSticks.Right, rightStickDeadzone);
+        Vector2 rightStick = new Vector2(Input.GetAxisRaw("RightStickX"), -Input.GetAxisRaw("RightStickY"));
         Vector2 playerToMouse = mouseSettings.GetCursorWorldPoint() - playerController.transform.position;
 
         bool leftDPAD = state.DPad.Left == ButtonState.Pressed, rightDPAD = state.DPad.Right == ButtonState.Pressed;
@@ -127,8 +127,9 @@ public class PlayerInput : MonoBehaviour {
             mouseAiming = true;
 
             mouseSettings.SetVisible(true);
-        } else if (rightStick != Vector2.zero) {
+        } else if (rightStick.magnitude >= 0.5f) {
             playerController.Aim(rightStick.x, rightStick.y);
+            Debug.Log("(" + rightStick.x + ", " + rightStick.y + ")");
             stickAiming = true;
 
             mouseSettings.SetVisible(false);
@@ -137,7 +138,7 @@ public class PlayerInput : MonoBehaviour {
         if (Input.GetMouseButtonUp(0) && mouseAiming) {
             playerController.Attack();
             mouseAiming = false;
-        } else if (rightStick == Vector2.zero && stickAiming) {
+        } else if (rightStick.magnitude < 0.5f && stickAiming) {
             playerController.Attack();
             stickAiming = false;
         }
@@ -211,8 +212,12 @@ public class PlayerInput : MonoBehaviour {
         return result;
     }
 
-    Vector2 ApplyStickDeadzone(GamePadThumbSticks.StickValue stick, float stickDeadzone) {
-        float stickX = stick.X;
+    Vector2 ApplyStickDeadzone (GamePadThumbSticks.StickValue stick, float stickDeadzone) {
+        return ApplyStickDeadzone(new Vector2(stick.X, stick.Y), stickDeadzone);
+    }
+
+    Vector2 ApplyStickDeadzone(Vector2 stick, float stickDeadzone) {
+        float stickX = stick.x;
         if (stickX > 0) {
             stickX = Mathf.Clamp(stickX, stickDeadzone, 1);
             stickX = ExtensionMethods.Map(stickX, stickDeadzone, 1, 0, 1);
@@ -223,7 +228,7 @@ public class PlayerInput : MonoBehaviour {
         }
 
 
-        float stickY = stick.Y;
+        float stickY = stick.y;
         if (stickY > 0) {
             stickY = Mathf.Clamp(stickY, stickDeadzone, 1);
             stickY = ExtensionMethods.Map(stickY, stickDeadzone, 1, 0, 1);

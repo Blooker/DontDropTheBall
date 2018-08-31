@@ -245,7 +245,7 @@ public class PlayerController : MonoBehaviour {
     }
 
     public void Attack () {
-        if (numAirAttacks <= 2) {
+        if (numAirAttacks < 2) {
             Debug.Log("Attack dash");
 
             atkDashDist = maxAtkDashDist / (numAirAttacks+1);

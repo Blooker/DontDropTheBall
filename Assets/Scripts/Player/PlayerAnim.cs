@@ -188,6 +188,8 @@ public class PlayerAnim : MonoBehaviour {
     #endregion
 
     public void Aim (Vector2 aimDir) {
+        
+
         aimParent.transform.rotation = Quaternion.Euler(0,0,Mathf.Atan2(-aimDir.x, aimDir.y) *Mathf.Rad2Deg);
         isAiming = true;
     }
