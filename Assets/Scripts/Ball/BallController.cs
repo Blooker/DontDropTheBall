@@ -13,6 +13,7 @@ public class BallController : MonoBehaviour {
     [SerializeField] private float bCheckMinMagnitude = 5, bCheckMaxMagnitude = 150;
 
     private Vector2 lastVel;
+    private bool isBouncing = true;
 
     private ContactFilter2D bounceFilter;
 
@@ -42,11 +43,22 @@ public class BallController : MonoBehaviour {
     }
 
     public void Hit (Vector2 dir, float force) {
-        rb.velocity = dir * force;
+        
+
+        RaycastHit2D[] hits = new RaycastHit2D[1];
+        if (Physics2D.CircleCast(transform.position, transform.localScale.x/2f, dir, bounceFilter, hits, 0.2f) > 0) {
+            Bounce(hits[0].normal, hits[0].point, dir * force, 1);
+        } else {
+            rb.velocity = dir * force;
+        }
     }
 
     void Bounce (Vector2 hitNormal, Vector2 hitPoint) {
-        Vector2 dir = lastVel.normalized;
+        Bounce(hitNormal, hitPoint, lastVel, bounceAmount);
+    }
+
+    void Bounce (Vector2 hitNormal, Vector2 hitPoint, Vector2 vel, float amount) {
+        Vector2 dir = vel.normalized;
 
         Vector2 reflection = Vector2.Reflect(dir, hitNormal);
 
@@ -54,7 +66,7 @@ public class BallController : MonoBehaviour {
         Debug.DrawLine(transform.position, (Vector2)transform.position + reflection * 10f, Color.cyan, 10f);
         Debug.DrawLine(hitPoint, hitPoint + hitNormal * 10f, Color.green, 10f);
 
-        Vector2 newVel = reflection * lastVel.magnitude * bounceAmount;
+        Vector2 newVel = reflection * vel.magnitude * amount;
         rb.velocity = newVel;
     }
 

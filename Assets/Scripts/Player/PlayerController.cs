@@ -81,6 +81,7 @@ public class PlayerController : MonoBehaviour {
     private bool isJumping = false;
     private bool isWallSliding = false, wallOnRightSide = false;
     private bool isDashing = false;
+    private bool isHitBall = false;
 
     private BallController ball;
 
@@ -140,8 +141,7 @@ public class PlayerController : MonoBehaviour {
 
         if (dshLerpValue < dshLerpLimit) {
             transform.position = Vector3.Lerp(dshStart, dshEnd, dshLerpValue);
-            if (lastDashType == DashType.Attack && IsTouchingBall()) {
-                Debug.Log("Ball touched");
+            if (lastDashType == DashType.Attack && IsTouchingBall() && canAttack) {
                 dshLerpLimit *= 0.9f;
 
                 HitBall();
@@ -271,6 +271,7 @@ public class PlayerController : MonoBehaviour {
             lastDashType = DashType.Attack;
             StartDash(lastAimDir.x, lastAimDir.y, atkDashDist, atkDashSpeed);
         } else if (IsTouchingBall()) {
+            Debug.Log("No dash, hit ball");
             HitBall();
         }
     }
@@ -416,12 +417,17 @@ public class PlayerController : MonoBehaviour {
                 numMoveDashes -= 1;
                 break;
             case DashType.Attack:
-                numAirAttacks += 1;
+                if (!isHitBall) {
+                    numAirAttacks += 1;
+                }
+                
                 canAttack = true;
                 break;
             default:
                 break;
         }
+
+        isHitBall = false;
 
         dshLerpValue = 1;
         dshLerpLimit = 1;
@@ -442,8 +448,14 @@ public class PlayerController : MonoBehaviour {
     }
 
     void HitBall () {
-        if (canAttack)
-            ball.Hit(atkDir, atkForce);
+        ball.Hit(atkDir, atkForce);
+        
+        if (numMoveDashes <= 0) {
+            ResetDashes(true);
+        }
+
+        ResetAirAttacks();
+        isHitBall = true;
     }
 
     bool IsTouchingBall () {
