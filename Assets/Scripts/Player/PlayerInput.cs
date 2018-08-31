@@ -128,8 +128,7 @@ public class PlayerInput : MonoBehaviour {
 
             mouseSettings.SetVisible(true);
         } else if (rightStick != Vector2.zero) {
-            //playerController.Aim(rightStick.x, rightStick.y);
-            playerController.Aim(Input.GetAxisRaw("RightStickX"), Input.GetAxisRaw("RightStickY"));
+            playerController.Aim(rightStick.x, rightStick.y);
             stickAiming = true;
 
             mouseSettings.SetVisible(false);
@@ -143,20 +142,35 @@ public class PlayerInput : MonoBehaviour {
             stickAiming = false;
         }
 
-        bool jumpPad = OnXInputButtonDown(prevState.Buttons.A, state.Buttons.A);
-        if (jumpPad) {
-            mouseSettings.SetVisible(false);
-        }
 
         bool jumpKey = Input.GetKeyDown(KeyCode.Space);
         if (jumpKey) {
             mouseSettings.SetVisible(true);
         }
 
-        if (jumpKey || jumpPad) {
-            playerController.Jump();
+        bool jumpPad = OnXInputButtonDown(prevState.Buttons.A, state.Buttons.A);
+        if (jumpPad) {
+            mouseSettings.SetVisible(false);
         }
 
+        if (jumpKey || jumpPad) {
+            playerController.StartJump();
+        }
+
+
+        bool jumpCancelKey = Input.GetKeyDown(KeyCode.LeftShift);
+        if (jumpCancelKey) {
+            mouseSettings.SetVisible(true);
+        }
+
+        bool jumpCancelPad = OnXInputButtonDown(prevState.Buttons.RightShoulder, state.Buttons.RightShoulder);
+        if (jumpCancelPad) {
+            mouseSettings.SetVisible(false);
+        }
+
+        if (jumpCancelKey || jumpCancelPad) {
+            playerController.EndJump();
+        }
 #else
 
         playerController.Move(horiz);
@@ -171,6 +185,14 @@ public class PlayerInput : MonoBehaviour {
 
     bool OnXInputButtonDown(ButtonState prevState, ButtonState state) {
         if (prevState == ButtonState.Released && state == ButtonState.Pressed) {
+            return true;
+        }
+
+        return false;
+    }
+
+    bool OnXInputButtonUp(ButtonState prevState, ButtonState state) {
+        if (prevState == ButtonState.Pressed && state == ButtonState.Released) {
             return true;
         }
 

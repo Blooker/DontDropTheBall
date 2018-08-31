@@ -75,6 +75,7 @@ public class PlayerController : MonoBehaviour {
     private float atkDashDist, atkDashSpeed;
 
     private bool isGrounded = false, isLanded = false, isOnCeiling = false, isHitCeiling = false;
+    private bool isJumping = false;
     private bool isWallSliding = false, wallOnRightSide = false;
     private bool isDashing = false;
 
@@ -113,6 +114,10 @@ public class PlayerController : MonoBehaviour {
     void Update() {
         if (isLanded)
             Land();
+
+        if (isJumping && rb.velocity.y < 0) {
+            EndJump();
+        }
 
         if (isHitCeiling)
             HitCeiling();
@@ -203,7 +208,7 @@ public class PlayerController : MonoBehaviour {
         }
     }
 
-    public void Jump() {
+    public void StartJump() {
         if (pauseOnJump)
             Debug.Break();
 
@@ -212,6 +217,16 @@ public class PlayerController : MonoBehaviour {
         } else {
             GroundJump();
         }        
+    }
+
+    public void EndJump () {
+        if (isJumping && rb.velocity.y > 0) {
+            Vector2 vel = rb.velocity;
+            vel.y = rb.velocity.y / 4f;
+            rb.velocity = vel;
+        }
+
+        isJumping = false;
     }
 
     public void Dash(float horiz, float vert) {
@@ -250,6 +265,8 @@ public class PlayerController : MonoBehaviour {
             playerAnim.SpawnJumpSmoke();
             numJumps -= 1;
         }
+
+        isJumping = true;
     }
 
     private void WallJump () {
@@ -258,6 +275,8 @@ public class PlayerController : MonoBehaviour {
 
         wJumpMoveSleepTimer = wJumpMoveSleepAmount;
         EndWallSlide();
+
+        isJumping = true;
     }
 
     // Called when the player has just landed on the ground
