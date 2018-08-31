@@ -11,6 +11,8 @@ public class EntityManager : MonoBehaviour {
     private PlayerController player;
     private BallController ball;
 
+    private bool ballRefSet = false;
+
     private Collider2D playerColl, ballColl;
 
     private PlayerInput playerInput;
@@ -44,6 +46,10 @@ public class EntityManager : MonoBehaviour {
 
         if (playerColl != null && ballColl != null)
             Physics2D.IgnoreCollision(playerColl, ballColl);
+
+        if (!ballRefSet) {
+            player.SetBall(ball);
+        }
     }
 
     public Camera GetMainPlayerCam () {
@@ -68,6 +74,7 @@ public class EntityManager : MonoBehaviour {
     // Destroys player and safely removes all references to it
     public void DestroyPlayer () {
         playerColl = null;
+        ballRefSet = false;
 
         playerInput.SetPlayer(null);
         Destroy(player.gameObject);
@@ -85,6 +92,8 @@ public class EntityManager : MonoBehaviour {
     // Destroys player and safely removes all references to it
     public void DestroyBall () {
         ballColl = null;
+        ballRefSet = false;
+
         Destroy(ball.gameObject);
     }
 

@@ -129,7 +129,6 @@ public class PlayerInput : MonoBehaviour {
             mouseSettings.SetVisible(true);
         } else if (rightStick.magnitude >= 0.5f) {
             playerController.Aim(rightStick.x, rightStick.y);
-            Debug.Log("(" + rightStick.x + ", " + rightStick.y + ")");
             stickAiming = true;
 
             mouseSettings.SetVisible(false);

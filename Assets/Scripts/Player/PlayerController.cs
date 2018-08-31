@@ -46,6 +46,7 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private LayerMask whatStopsDash;
 
     [Header("Attack")]
+    [SerializeField] private float atkForce;
     [SerializeField] private float minAtkDashSpeed = 5;    
     [SerializeField] private float maxAtkDashDist = 5f;    
 
@@ -71,19 +72,26 @@ public class PlayerController : MonoBehaviour {
 
     private Vector2 lastAimDir;
 
+    private Vector2 atkDir;
     private int numAirAttacks;
     private float atkDashDist, atkDashSpeed;
+    private bool canAttack = true;
 
     private bool isGrounded = false, isLanded = false, isOnCeiling = false, isHitCeiling = false;
     private bool isJumping = false;
     private bool isWallSliding = false, wallOnRightSide = false;
     private bool isDashing = false;
 
+    private BallController ball;
+
+    private Collider2D playerColl, ballColl;
     private PlayerAnim playerAnim;
     private Rigidbody2D rb;
 
     // Use this for initialization
     void Awake() {
+        playerColl = GetComponent<Collider2D>();
+
         playerAnim = GetComponent<PlayerAnim>();
         rb = GetComponent<Rigidbody2D>();
     }
@@ -132,6 +140,15 @@ public class PlayerController : MonoBehaviour {
 
         if (dshLerpValue < dshLerpLimit) {
             transform.position = Vector3.Lerp(dshStart, dshEnd, dshLerpValue);
+            if (lastDashType == DashType.Attack && IsTouchingBall()) {
+                Debug.Log("Ball touched");
+                dshLerpLimit *= 0.9f;
+
+                HitBall();
+
+                canAttack = false;
+            }
+
             dshLerpValue += dshCurrentSpeed * Time.deltaTime;
         } else if (isDashing) {
             EndDash(dshEnd);
@@ -245,15 +262,22 @@ public class PlayerController : MonoBehaviour {
     }
 
     public void Attack () {
-        if (numAirAttacks < 2) {
-            Debug.Log("Attack dash");
+        atkDir = lastAimDir;
 
+        if (numAirAttacks < 2) {
             atkDashDist = maxAtkDashDist / (numAirAttacks+1);
             atkDashSpeed = minAtkDashSpeed * (numAirAttacks+1);
 
             lastDashType = DashType.Attack;
             StartDash(lastAimDir.x, lastAimDir.y, atkDashDist, atkDashSpeed);
+        } else if (IsTouchingBall()) {
+            HitBall();
         }
+    }
+
+    public void SetBall (BallController _ball) {
+        ball = _ball;
+        ballColl = ball.GetComponent<Collider2D>();
     }
 
     private void GroundJump () {
@@ -393,12 +417,14 @@ public class PlayerController : MonoBehaviour {
                 break;
             case DashType.Attack:
                 numAirAttacks += 1;
+                canAttack = true;
                 break;
             default:
                 break;
         }
 
         dshLerpValue = 1;
+        dshLerpLimit = 1;
 
         rb.simulated = true;
         rb.velocity = Vector3.zero;
@@ -413,6 +439,15 @@ public class PlayerController : MonoBehaviour {
         }
 
         isDashing = false;
+    }
+
+    void HitBall () {
+        if (canAttack)
+            ball.Hit(atkDir, atkForce);
+    }
+
+    bool IsTouchingBall () {
+        return ballColl.bounds.Intersects(playerColl.bounds);
     }
 
     void UpdateVertChecks () {

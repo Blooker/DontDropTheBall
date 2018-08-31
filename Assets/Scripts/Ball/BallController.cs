@@ -41,6 +41,10 @@ public class BallController : MonoBehaviour {
         }
     }
 
+    public void Hit (Vector2 dir, float force) {
+        rb.velocity = dir * force;
+    }
+
     void Bounce (Vector2 hitNormal, Vector2 hitPoint) {
         Vector2 dir = lastVel.normalized;
 
