@@ -153,7 +153,7 @@ public class PlayerAnim : MonoBehaviour {
     #endregion
 
     #region Dash
-    public void StartDash() {
+    public void StartMoveDash() {
         //bodyFlashTimer = -1;
         //SetBodyPaletteMix(1);
         bodyFlashTimer = 0;
@@ -187,8 +187,8 @@ public class PlayerAnim : MonoBehaviour {
     }
     #endregion
 
-    public void Aim (float horiz, float vert) {
-        aimParent.transform.rotation = Quaternion.Euler(0,0,Mathf.Atan2(-horiz, vert)*Mathf.Rad2Deg);
+    public void Aim (Vector2 aimDir) {
+        aimParent.transform.rotation = Quaternion.Euler(0,0,Mathf.Atan2(-aimDir.x, aimDir.y) *Mathf.Rad2Deg);
         isAiming = true;
     }
 

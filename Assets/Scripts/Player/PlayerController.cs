@@ -40,10 +40,14 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private float wJumpMoveSleepAmount = 0.2f;
 
     [Header("Dash")]
-    [SerializeField] private float dshSpeed = 0.1f;
-    [SerializeField] private float dshDistance = 10f;
-    [SerializeField] private float maxDashes = 1;
+    [SerializeField] private float moveDashSpeed = 0.1f;
+    [SerializeField] private float moveDashDist = 10f;
+    [SerializeField] private int maxDashes = 1;
     [SerializeField] private LayerMask whatStopsDash;
+
+    [Header("Attack")]
+    [SerializeField] private float minAtkDashSpeed = 5;    
+    [SerializeField] private float maxAtkDashDist = 5f;    
 
     private float moveInputX;
 
@@ -57,10 +61,18 @@ public class PlayerController : MonoBehaviour {
 
     private float wJumpMoveSleepTimer = 0;
 
-    private float numDashes = 0;
+    private enum DashType {Move, Attack};
+    private DashType lastDashType;
+
+    private int numMoveDashes = 0;
     private Vector3 dshStart, dshEnd, dshColNormal;
     private float dshLerpValue = 1, dshLerpLimit = 1f, dshCurrentSpeed;
     private ContactFilter2D dshFilter;
+
+    private Vector2 lastAimDir;
+
+    private int numAirAttacks;
+    private float atkDashDist, atkDashSpeed;
 
     private bool isGrounded = false, isLanded = false, isOnCeiling = false, isHitCeiling = false;
     private bool isWallSliding = false, wallOnRightSide = false;
@@ -78,6 +90,7 @@ public class PlayerController : MonoBehaviour {
     void Start() {
         ResetExtraJumps();
         ResetDashes(true);
+        ResetAirAttacks();
 
         regGravityScale = rb.gravityScale;
 
@@ -201,64 +214,31 @@ public class PlayerController : MonoBehaviour {
         }        
     }
 
-    public void StartDash(float horiz, float vert) {
-        if (isDashing || numDashes <= 0)
+    public void Dash(float horiz, float vert) {
+        if (isDashing || numMoveDashes <= 0)
             return;
 
-        if (isGrounded && vert < 0)
-            vert = 0;
+        StartDash(horiz, vert, moveDashDist, moveDashSpeed);
+        lastDashType = DashType.Move;
 
-        Vector3 dashDir = new Vector2(horiz, vert).normalized;
-
-        if (dashDir.magnitude == 0) {
-            return;
-        }
-
-        RaycastHit2D[] hits = new RaycastHit2D[1];
-
-        dshStart = transform.position;
-        if (Physics2D.BoxCast(transform.position, transform.localScale * 0.95f, 0, dashDir, dshFilter, hits, dshDistance) > 0) {
-            //Debug.Log("Obstacle found");
-            dshEnd = hits[0].point;
-            dshColNormal = hits[0].normal;
-
-            //Debug.Log(dshColNormal);
-
-            if (dashDir.y == 0) {
-                dshEnd.y = transform.position.y;
-            }
-
-            if (dashDir.x == 0) {
-                dshEnd.x = transform.position.x;
-            }
-
-            Vector3 startToEndDir = (dshEnd - dshStart).normalized;
-
-            dshEnd += new Vector3(-startToEndDir.x * (transform.localScale.x / 1.5f), -startToEndDir.y * (transform.localScale.y / 1.5f));
-
-            float startToEndDist = Vector3.Distance(dshStart, dshEnd);
-
-            if (startToEndDist < 3.5f) {
-                EndDash(dshEnd);
-                return;
-            }
-
-            dshCurrentSpeed = dshSpeed / (startToEndDist / dshDistance);
-        } else {
-            dshEnd = transform.position + dashDir * dshDistance;
-            dshCurrentSpeed = dshSpeed;
-        }
-
-        playerAnim.StartDash();
-
-        rb.simulated = false;
-        dshLerpValue = 0;
-
-        isDashing = true;
+        playerAnim.StartMoveDash();
     }
 
     public void Aim (float horiz, float vert) {
-        playerAnim.Aim(horiz, vert);
+        lastAimDir = new Vector2(horiz, vert).normalized;
+        playerAnim.Aim(lastAimDir);
+    }
+
+    public void Attack () {
+        if (numAirAttacks <= 2) {
+            Debug.Log("Attack dash");
+
+            atkDashDist = maxAtkDashDist / (numAirAttacks+1);
+            atkDashSpeed = minAtkDashSpeed * (numAirAttacks+1);
+
+            lastDashType = DashType.Attack;
+            StartDash(lastAimDir.x, lastAimDir.y, atkDashDist, atkDashSpeed);
+        }
     }
 
     private void GroundJump () {
@@ -283,8 +263,9 @@ public class PlayerController : MonoBehaviour {
     // Called when the player has just landed on the ground
     void Land () {
         ResetExtraJumps();
+        ResetAirAttacks();
 
-        if (numDashes < maxDashes)
+        if (numMoveDashes < maxDashes)
             ResetDashes(true);
 
         if (rb.velocity.y < 0) {
@@ -334,10 +315,69 @@ public class PlayerController : MonoBehaviour {
         playerAnim.EndWallSlide();
     }
 
-    void EndDash (Vector3 endPos) {
-        numDashes -= 1;
+    void StartDash(float horiz, float vert, float dashDistance, float dashSpeed) {
+        if (isGrounded && vert < 0)
+            vert = 0;
 
-        //transform.position = endPos;
+        Vector3 dashDir = new Vector2(horiz, vert).normalized;
+
+        if (dashDir.magnitude == 0) {
+            return;
+        }
+
+        RaycastHit2D[] hits = new RaycastHit2D[1];
+
+        dshStart = transform.position;
+        if (Physics2D.BoxCast(transform.position, transform.localScale * 0.95f, 0, dashDir, dshFilter, hits, dashDistance) > 0) {
+            //Debug.Log("Obstacle found");
+            dshEnd = hits[0].point;
+            dshColNormal = hits[0].normal;
+
+            //Debug.Log(dshColNormal);
+
+            if (dashDir.y == 0) {
+                dshEnd.y = transform.position.y;
+            }
+
+            if (dashDir.x == 0) {
+                dshEnd.x = transform.position.x;
+            }
+
+            Vector3 startToEndDir = (dshEnd - dshStart).normalized;
+
+            dshEnd += new Vector3(-startToEndDir.x * (transform.localScale.x / 1.5f), -startToEndDir.y * (transform.localScale.y / 1.5f));
+
+            float startToEndDist = Vector3.Distance(dshStart, dshEnd);
+
+            if (startToEndDist < 3.5f) {
+                EndDash(dshEnd);
+                return;
+            }
+
+            dshCurrentSpeed = dashSpeed / (startToEndDist / dashDistance);
+        }
+        else {
+            dshEnd = transform.position + dashDir * dashDistance;
+            dshCurrentSpeed = dashSpeed;
+        }
+
+        rb.simulated = false;
+        dshLerpValue = 0;
+
+        isDashing = true;
+    }
+
+    void EndDash (Vector3 endPos) {
+        switch (lastDashType) {
+            case DashType.Move:
+                numMoveDashes -= 1;
+                break;
+            case DashType.Attack:
+                numAirAttacks += 1;
+                break;
+            default:
+                break;
+        }
 
         dshLerpValue = 1;
 
@@ -348,8 +388,9 @@ public class PlayerController : MonoBehaviour {
 
         if (isGrounded) {
             ResetDashes(false);
+            ResetAirAttacks();
         } else {
-            playerAnim.EndDash(numDashes > 0);
+            playerAnim.EndDash(numMoveDashes > 0);
         }
 
         isDashing = false;
@@ -446,8 +487,12 @@ public class PlayerController : MonoBehaviour {
     }
 
     void ResetDashes (bool playAnimation) {
-        numDashes = maxDashes;
+        numMoveDashes = maxDashes;
         playerAnim.ResetDashes(playAnimation);
+    }
+
+    void ResetAirAttacks () {
+        numAirAttacks = 0;
     }
 
 # if UNITY_EDITOR_WIN

@@ -6,11 +6,13 @@ using XInputDotNetPure;
 public class PlayerInput : MonoBehaviour {
     [Header("Sticks")]
     [Range(0, 1)]
-    [SerializeField] private float stickDeadzone;
+    [SerializeField] private float leftStickDeadzone, rightStickDeadzone;
 
     private PlayerController playerController;
     private MouseSettings mouseSettings;
     private bool playerIndexSet = false;
+
+    private bool mouseAiming, stickAiming;
 
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
 
@@ -61,8 +63,8 @@ public class PlayerInput : MonoBehaviour {
         prevState = state;
         state = GamePad.GetState(playerIndex);
 
-        Vector2 leftStick = ApplyStickDeadzone(state.ThumbSticks.Left);
-        Vector2 rightStick = ApplyStickDeadzone(state.ThumbSticks.Right);
+        Vector2 leftStick = ApplyStickDeadzone(state.ThumbSticks.Left, leftStickDeadzone);
+        Vector2 rightStick = ApplyStickDeadzone(state.ThumbSticks.Right, rightStickDeadzone);
         Vector2 playerToMouse = mouseSettings.GetCursorWorldPoint() - playerController.transform.position;
 
         bool leftDPAD = state.DPad.Left == ButtonState.Pressed, rightDPAD = state.DPad.Right == ButtonState.Pressed;
@@ -74,7 +76,7 @@ public class PlayerInput : MonoBehaviour {
         }
 
         if (Input.GetMouseButtonDown(1)) {
-            playerController.StartDash(playerToMouse.x, playerToMouse.y);
+            playerController.Dash(playerToMouse.x, playerToMouse.y);
             mouseSettings.SetVisible(true);
         }
 
@@ -83,7 +85,7 @@ public class PlayerInput : MonoBehaviour {
             playerController.Move(leftStick.x);
 
             if (OnXInputButtonDown(prevState.Buttons.LeftShoulder, state.Buttons.LeftShoulder)) {
-                playerController.StartDash(leftStick.x, leftStick.y);
+                playerController.Dash(leftStick.x, leftStick.y);
             }
 
             mouseSettings.SetVisible(false);
@@ -107,7 +109,7 @@ public class PlayerInput : MonoBehaviour {
             playerController.Move(xDir);
 
             if (OnXInputButtonDown(prevState.Buttons.LeftShoulder, state.Buttons.LeftShoulder)) {
-                playerController.StartDash(xDir, yDir);
+                playerController.Dash(xDir, yDir);
             }
 
             mouseSettings.SetVisible(false);
@@ -122,10 +124,23 @@ public class PlayerInput : MonoBehaviour {
 
         if (Input.GetMouseButton(0)) {
             playerController.Aim(playerToMouse.x, playerToMouse.y);
+            mouseAiming = true;
+
             mouseSettings.SetVisible(true);
         } else if (rightStick != Vector2.zero) {
-            playerController.Aim(rightStick.x, rightStick.y);
+            //playerController.Aim(rightStick.x, rightStick.y);
+            playerController.Aim(Input.GetAxisRaw("RightStickX"), Input.GetAxisRaw("RightStickY"));
+            stickAiming = true;
+
             mouseSettings.SetVisible(false);
+        }
+
+        if (Input.GetMouseButtonUp(0) && mouseAiming) {
+            playerController.Attack();
+            mouseAiming = false;
+        } else if (rightStick == Vector2.zero && stickAiming) {
+            playerController.Attack();
+            stickAiming = false;
         }
 
         bool jumpPad = OnXInputButtonDown(prevState.Buttons.A, state.Buttons.A);
@@ -174,7 +189,7 @@ public class PlayerInput : MonoBehaviour {
         return result;
     }
 
-    Vector2 ApplyStickDeadzone(GamePadThumbSticks.StickValue stick) {
+    Vector2 ApplyStickDeadzone(GamePadThumbSticks.StickValue stick, float stickDeadzone) {
         float stickX = stick.X;
         if (stickX > 0) {
             stickX = Mathf.Clamp(stickX, stickDeadzone, 1);
