@@ -258,6 +258,27 @@ public class PlayerController : MonoBehaviour {
         playerAnim.StartMoveDash();
     }
 
+    public void Dash(float horiz, float vert, float dist) {
+        if (isDashing || numMoveDashes <= 0)
+            return;
+
+        float _dist;
+        float _speed;
+
+        if (dist > moveDashDist) {
+            _dist = moveDashDist;
+            _speed = moveDashSpeed;
+        } else {
+            _dist = dist;
+            _speed = (moveDashDist * moveDashSpeed) / dist;
+        }
+
+        StartDash(horiz, vert, _dist, _speed);
+        lastDashType = DashType.Move;
+
+        playerAnim.StartMoveDash();
+    }
+
     public void Aim (float horiz, float vert) {
         lastAimDir = new Vector2(horiz, vert).normalized;
         playerAnim.Aim(lastAimDir);

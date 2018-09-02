@@ -77,7 +77,7 @@ public class PlayerInput : MonoBehaviour {
         }
 
         if (Input.GetMouseButtonDown(1)) {
-            playerController.Dash(playerToMouse.x, playerToMouse.y);
+            playerController.Dash(playerToMouse.x, playerToMouse.y, playerToMouse.magnitude);
             mouseSettings.SetVisible(true);
         }
 
