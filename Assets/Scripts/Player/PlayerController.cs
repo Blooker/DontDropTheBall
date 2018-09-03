@@ -153,7 +153,7 @@ public class PlayerController : MonoBehaviour {
 
             dshLerpValue += dshCurrentSpeed * Time.deltaTime;
         } else if (isDashing) {
-            EndDash(dshEnd);
+            EndDash();
         }
     }
 
@@ -248,6 +248,7 @@ public class PlayerController : MonoBehaviour {
         isJumping = false;
     }
 
+    // Same distance every time (for controller dashing)
     public void Dash(float horiz, float vert) {
         if (isDashing || numMoveDashes <= 0)
             return;
@@ -258,6 +259,7 @@ public class PlayerController : MonoBehaviour {
         playerAnim.StartMoveDash();
     }
 
+    // Custom distance (for mouse dashing)
     public void Dash(float horiz, float vert, float dist) {
         if (isDashing || numMoveDashes <= 0)
             return;
@@ -290,6 +292,10 @@ public class PlayerController : MonoBehaviour {
         if (isGrounded && IsTouchingBall()) {
             HitBall();
         } else if (atkDashCounter < maxAtkDashes) {
+            if (isDashing) {
+                EndDash();
+            }
+
             atkDashDist = maxAtkDashDist / (1.5f*(atkDashCounter+1));
             atkDashSpeed = minAtkDashSpeed * (1.5f*(atkDashCounter+1));
 
@@ -393,6 +399,14 @@ public class PlayerController : MonoBehaviour {
             return;
         }
 
+        if(isWallSliding) {
+            if (wallOnRightSide && dashDir.x > 0) {
+                return;
+            } else if (!wallOnRightSide && dashDir.x < 0) {
+                return;
+            }
+        }
+
         RaycastHit2D[] hits = new RaycastHit2D[1];
 
         dshStart = transform.position;
@@ -418,7 +432,7 @@ public class PlayerController : MonoBehaviour {
             float startToEndDist = Vector3.Distance(dshStart, dshEnd);
 
             if (startToEndDist < 3.5f) {
-                EndDash(dshEnd);
+                EndDash();
                 return;
             }
 
@@ -435,7 +449,7 @@ public class PlayerController : MonoBehaviour {
         isDashing = true;
     }
 
-    void EndDash (Vector3 endPos) {
+    void EndDash () {
         switch (lastDashType) {
             case DashType.Move:
                 numMoveDashes -= 1;
