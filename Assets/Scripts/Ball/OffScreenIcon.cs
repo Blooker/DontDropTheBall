@@ -10,6 +10,8 @@ public class OffScreenIcon : MonoBehaviour {
     [SerializeField] private CameraController camController;
     [SerializeField] private EntityManager entityManager;
 
+    [SerializeField] private float minScale = 0.5f, scaleMaxDist;
+
     [SerializeField] private GameObject pointerGfx;
 
     [SerializeField] private Vector2 diagonalThreshold;
@@ -36,7 +38,7 @@ public class OffScreenIcon : MonoBehaviour {
             float x = Mathf.Clamp(ballPos.x, 1, (Screen.width * 0.5f) - 1);
             float y = Mathf.Clamp(ballPos.y, 1, (Screen.height * 0.5f) - 1);
 
-            SetRot(ballPos);
+            SetRotAndSize(ballPos);
 
             Vector3 worldPoint = camController.GetMainCam().ScreenToWorldPoint(new Vector3(x, y, zDiff));
             transform.position = worldPoint;
@@ -48,44 +50,58 @@ public class OffScreenIcon : MonoBehaviour {
         }
     }
 
-    private void SetRot(Vector3 ballPos) {
+    private void SetRotAndSize(Vector3 ballPos) {
+
+        float rot = 0, size = 1;
 
         if (ballPos.x < diagonalThreshold.x)
         {
             if (ballPos.y < diagonalThreshold.y)
             {
-                pointerGfx.transform.rotation = Quaternion.Euler(0, 0, 135);
+                rot = 135;
+                size = Vector3.Distance(ballPos, Vector3.zero);
             } else if (ballPos.y > (Screen.height*0.5f) - diagonalThreshold.y)
             {
-                pointerGfx.transform.rotation = Quaternion.Euler(0, 0, 45);
+                rot = 45;
+                size = Vector3.Distance(ballPos, new Vector3(0, 1));
             } else
             {
-                pointerGfx.transform.rotation = Quaternion.Euler(0, 0, 90);
+                rot = 90;
+                size = -ballPos.x;
             }
         } else if (ballPos.x > (Screen.width*0.5f) - diagonalThreshold.x)
         {
             if (ballPos.y < diagonalThreshold.y)
             {
-                pointerGfx.transform.rotation = Quaternion.Euler(0, 0, 225);
+                rot = 225;
+                size = Vector3.Distance(ballPos, new Vector3(1, 0));
             }
             else if (ballPos.y > (Screen.height * 0.5f) - diagonalThreshold.y)
             {
-                pointerGfx.transform.rotation = Quaternion.Euler(0, 0, 315);
+                rot = 315;
+                size = Vector3.Distance(ballPos, Vector3.one);
             }
             else
             {
-                pointerGfx.transform.rotation = Quaternion.Euler(0, 0, 270);
+                rot = 270;
+                size = ballPos.x - (Screen.width * 0.5f);
             }   
         } else
         {
             if (ballPos.y < diagonalThreshold.y)
             {
-                pointerGfx.transform.rotation = Quaternion.Euler(0, 0, 180);
+                rot = 180;
+                size = -ballPos.y;
             }
             else if (ballPos.y > (Screen.height * 0.5f) - diagonalThreshold.y)
             {
-                pointerGfx.transform.rotation = Quaternion.Euler(0, 0, 0);
+                rot = 0;
+                size = ballPos.y - (Screen.height * 0.5f);
             }
         }
+
+        pointerGfx.transform.rotation = Quaternion.Euler(0, 0, rot);
+        Debug.Log(size);
+        pointerGfx.transform.localScale = Vector3.one * ExtensionMethods.Map(Mathf.Clamp(size, 0, scaleMaxDist), 0, scaleMaxDist, 1, minScale);
     }
 }
