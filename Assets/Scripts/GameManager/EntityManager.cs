@@ -98,4 +98,8 @@ public class EntityManager : MonoBehaviour {
         Destroy(ball.gameObject);
     }
 
+    public BallController GetBallController () {
+        return ball;
+    }
+
 }
