@@ -14,22 +14,19 @@
 //***************************************************
 
 using UnityEngine;
-using System.Collections;
 
-namespace kode80.PixelRender.ShooterExample
-{
-	public class AutoScroll : MonoBehaviour 
-	{
-		public float speed = 20.0f;
+namespace kode80.PixelRender.ShooterExample {
+    public class AutoScroll : MonoBehaviour {
+        public float speed = 20.0f;
 
-		// Use this for initialization
-		void Start () {
-		
-		}
-		
-		// Update is called once per frame
-		void Update () {
-			transform.position += Vector3.right * Time.deltaTime * speed;
-		}
-	}
+        // Use this for initialization
+        void Start() {
+
+        }
+
+        // Update is called once per frame
+        void Update() {
+            transform.position += Vector3.right * Time.deltaTime * speed;
+        }
+    }
 }

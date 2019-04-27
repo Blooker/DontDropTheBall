@@ -1,129 +1,127 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
+using UnityEngine;
 
-namespace kode80.Versioning
-{
-	public class AssetUpdater
-	{
-		public delegate void RemoteVersionDownloadFinished( AssetUpdater updater, int assetIndex);
-		public RemoteVersionDownloadFinished remoteVersionDownloadFinished;
+namespace kode80.Versioning {
+    public class AssetUpdater {
+        public delegate void RemoteVersionDownloadFinished(AssetUpdater updater, int assetIndex);
+        public RemoteVersionDownloadFinished remoteVersionDownloadFinished;
 
-		public delegate void RemoteVersionDownloadFailed( AssetUpdater updater, int assetIndex);
-		public RemoteVersionDownloadFailed remoteVersionDownloadFailed;
+        public delegate void RemoteVersionDownloadFailed(AssetUpdater updater, int assetIndex);
+        public RemoteVersionDownloadFailed remoteVersionDownloadFailed;
 
-		private static AssetUpdater _instance;
-		public static AssetUpdater Instance {
-			get {
-				if( _instance == null) {
-					_instance = new AssetUpdater();
-				}
-				return _instance;
-			}
-		}
+        private static AssetUpdater _instance;
+        public static AssetUpdater Instance {
+            get {
+                if (_instance == null)
+                {
+                    _instance = new AssetUpdater();
+                }
+                return _instance;
+            }
+        }
 
-		private List<AssetVersion> _localVersions;
-		private Dictionary<AssetVersion,AssetVersion> _localToRemoteVersions;
-		private AssetVersionDownloader _downloader;
+        private List<AssetVersion> _localVersions;
+        private Dictionary<AssetVersion, AssetVersion> _localToRemoteVersions;
+        private AssetVersionDownloader _downloader;
 
-		public int AssetCount { get { return _localVersions.Count; } }
+        public int AssetCount { get { return _localVersions.Count; } }
 
-		private AssetUpdater()
-		{
-			_localVersions = new List<AssetVersion>();
-			_localToRemoteVersions = new Dictionary<AssetVersion, AssetVersion>();
-		}
+        private AssetUpdater() {
+            _localVersions = new List<AssetVersion>();
+            _localToRemoteVersions = new Dictionary<AssetVersion, AssetVersion>();
+        }
 
-		public void Refresh( bool forceRefresh = false)
-		{
-			List<AssetVersion> localVersions = FindLocalVersions();
-			if( forceRefresh || VersionListsAreEqual( localVersions, _localVersions) == false)
-			{
-				_localVersions = localVersions;
+        public void Refresh(bool forceRefresh = false) {
+            List<AssetVersion> localVersions = FindLocalVersions();
+            if (forceRefresh || VersionListsAreEqual(localVersions, _localVersions) == false)
+            {
+                _localVersions = localVersions;
 
-				_downloader = new AssetVersionDownloader();
-				_downloader.remoteVersionDownloadFinished += RemoteVersionDownloaderFinished;
-				_downloader.remoteVersionDownloadFailed += RemoteVersionDownloaderFailed;
+                _downloader = new AssetVersionDownloader();
+                _downloader.remoteVersionDownloadFinished += RemoteVersionDownloaderFinished;
+                _downloader.remoteVersionDownloadFailed += RemoteVersionDownloaderFailed;
 
-				foreach( AssetVersion local in _localVersions) {
-					_downloader.Add( local);
-				}
-			}
-		}
+                foreach (AssetVersion local in _localVersions)
+                {
+                    _downloader.Add(local);
+                }
+            }
+        }
 
-		public AssetVersion GetLocalVersion( int index) {
-			return _localVersions[ index];
-		}
+        public AssetVersion GetLocalVersion(int index) {
+            return _localVersions[index];
+        }
 
-		public AssetVersion GetRemoteVersion( int index) {
-			AssetVersion localVersion = GetLocalVersion( index);
+        public AssetVersion GetRemoteVersion(int index) {
+            AssetVersion localVersion = GetLocalVersion(index);
 
-			if( _localToRemoteVersions.ContainsKey( localVersion)) {
-				return _localToRemoteVersions[ localVersion];
-			}
+            if (_localToRemoteVersions.ContainsKey(localVersion))
+            {
+                return _localToRemoteVersions[localVersion];
+            }
 
-			return null;
-		}
+            return null;
+        }
 
-		#region AssetVersionDownloader delegate
+        #region AssetVersionDownloader delegate
 
-		private void RemoteVersionDownloaderFinished( AssetVersion local, AssetVersion remote)
-		{
-			_localToRemoteVersions[ local] = remote;
+        private void RemoteVersionDownloaderFinished(AssetVersion local, AssetVersion remote) {
+            _localToRemoteVersions[local] = remote;
 
-			if( remoteVersionDownloadFinished != null)
-			{
-				remoteVersionDownloadFinished( this, _localVersions.IndexOf( local));
-			}
-		}
+            if (remoteVersionDownloadFinished != null)
+            {
+                remoteVersionDownloadFinished(this, _localVersions.IndexOf(local));
+            }
+        }
 
-		private void RemoteVersionDownloaderFailed( AssetVersion local)
-		{
-			if( remoteVersionDownloadFailed != null)
-			{
-				remoteVersionDownloadFailed( this, _localVersions.IndexOf( local));
-			}
-		}
+        private void RemoteVersionDownloaderFailed(AssetVersion local) {
+            if (remoteVersionDownloadFailed != null)
+            {
+                remoteVersionDownloadFailed(this, _localVersions.IndexOf(local));
+            }
+        }
 
-		#endregion
+        #endregion
 
-		private List<AssetVersion> FindLocalVersions()
-		{
-			List<AssetVersion> versions = new List<AssetVersion>();
-			string[] paths = Directory.GetFiles( Application.dataPath, "AssetVersion.xml", SearchOption.AllDirectories);
+        private List<AssetVersion> FindLocalVersions() {
+            List<AssetVersion> versions = new List<AssetVersion>();
+            string[] paths = Directory.GetFiles(Application.dataPath, "AssetVersion.xml", SearchOption.AllDirectories);
 
-			foreach( string path in paths)
-			{
-				string localXML = File.ReadAllText( path);
-				AssetVersion version = AssetVersion.ParseXML( localXML);
+            foreach (string path in paths)
+            {
+                string localXML = File.ReadAllText(path);
+                AssetVersion version = AssetVersion.ParseXML(localXML);
 
-				if( version != null) {
-					versions.Add( version);
-				}
-			}
+                if (version != null)
+                {
+                    versions.Add(version);
+                }
+            }
 
-			return versions;
-		}
+            return versions;
+        }
 
-		private bool VersionListsAreEqual( List<AssetVersion> a, List<AssetVersion> b)
-		{
-			if( a == b) { return true; }
-			if( a.Count != b.Count) { return false; }
+        private bool VersionListsAreEqual(List<AssetVersion> a, List<AssetVersion> b) {
+            if (a == b) { return true; }
+            if (a.Count != b.Count) { return false; }
 
-			Dictionary<string,bool> hash = new Dictionary<string, bool>();
+            Dictionary<string, bool> hash = new Dictionary<string, bool>();
 
-			foreach( AssetVersion version in a) { 
-				hash[ version.ToString()] = true; 
-			}
+            foreach (AssetVersion version in a)
+            {
+                hash[version.ToString()] = true;
+            }
 
-			foreach( AssetVersion version in b) { 
-				if( hash.ContainsKey( version.ToString()) == false) { 
-					return false; 
-				} 
-			}
+            foreach (AssetVersion version in b)
+            {
+                if (hash.ContainsKey(version.ToString()) == false)
+                {
+                    return false;
+                }
+            }
 
-			return true;
-		}
-	}
+            return true;
+        }
+    }
 }

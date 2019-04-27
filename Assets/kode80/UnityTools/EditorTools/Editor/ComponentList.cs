@@ -21,146 +21,130 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
 //  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using UnityEngine;
-using UnityEditor;
-using UnityEditorInternal;
-using System;
-using System.Collections;
 using kode80.GUIWrapper;
+using System;
+using UnityEditor;
+using UnityEngine;
 
-namespace kode80.EditorTools
-{
-	public class ComponentList : EditorWindow 
-	{
-		private GUIVertical _gui;
+namespace kode80.EditorTools {
+    public class ComponentList : EditorWindow {
+        private GUIVertical _gui;
 
-		[MenuItem( "Window/kode80/Editor Tools/Component List")]
-		public static void Init()
-		{
-			ComponentList win = EditorWindow.GetWindow( typeof( ComponentList)) as ComponentList;
-			win.titleContent = new GUIContent( "Component List");
-			win.Show();
-		}
+        [MenuItem("Window/kode80/Editor Tools/Component List")]
+        public static void Init() {
+            ComponentList win = EditorWindow.GetWindow(typeof(ComponentList)) as ComponentList;
+            win.titleContent = new GUIContent("Component List");
+            win.Show();
+        }
 
-		public void RefreshList( GameObject gameObject)
-		{
-			_gui = new GUIVertical();
+        public void RefreshList(GameObject gameObject) {
+            _gui = new GUIVertical();
 
-			if( gameObject == null)
-			{
-				_gui.Add( new GUILabel( new GUIContent( "Select a GameObject to edit it's component list.")));
-			}
-			else
-			{
-				_gui.Add( new GUIButton( new GUIContent( "Highlight " + gameObject.name), HighlightSelectedGameObjectClicked));
+            if (gameObject == null)
+            {
+                _gui.Add(new GUILabel(new GUIContent("Select a GameObject to edit it's component list.")));
+            }
+            else
+            {
+                _gui.Add(new GUIButton(new GUIContent("Highlight " + gameObject.name), HighlightSelectedGameObjectClicked));
 
-				GUIScrollView scrollView = new GUIScrollView();
-				_gui.Add( scrollView);
+                GUIScrollView scrollView = new GUIScrollView();
+                _gui.Add(scrollView);
 
-				Component[] components = gameObject.GetComponents<Component>();
-				int index = 0;
-				int maxIndex = Math.Max( 0, components.Length - 1);
-				foreach( Component component in components)
-				{
-					GUIContent componentName = new GUIContent( component.GetType().Name);
-					GUIDelayedIntField field = new GUIDelayedIntField( componentName, 
-																	   index++, 
-																	   1,
-																	   maxIndex,
-																	   ComponentIndexChanged);
-					
-					// Transform is always first component & can't be reordered
-					field.isEnabled = index > 1;
+                Component[] components = gameObject.GetComponents<Component>();
+                int index = 0;
+                int maxIndex = Math.Max(0, components.Length - 1);
+                foreach (Component component in components)
+                {
+                    GUIContent componentName = new GUIContent(component.GetType().Name);
+                    GUIDelayedIntField field = new GUIDelayedIntField(componentName,
+                                                                       index++,
+                                                                       1,
+                                                                       maxIndex,
+                                                                       ComponentIndexChanged);
 
-					scrollView.Add( field);
-				}
-			}
+                    // Transform is always first component & can't be reordered
+                    field.isEnabled = index > 1;
 
-			Repaint();
-		}
+                    scrollView.Add(field);
+                }
+            }
 
-		#region GUI Actions
+            Repaint();
+        }
 
-		void HighlightSelectedGameObjectClicked( GUIBase sender)
-		{
-			EditorGUIUtility.PingObject( SelectedGameObject());
-		}
+        #region GUI Actions
 
-		void ComponentIndexChanged( GUIBase sender)
-		{
-			GUIDelayedIntField field = sender as GUIDelayedIntField;
-			GameObject gameObject = SelectedGameObject();
+        void HighlightSelectedGameObjectClicked(GUIBase sender) {
+            EditorGUIUtility.PingObject(SelectedGameObject());
+        }
 
-			ReorderComponent( gameObject, field.previousValue, field.value);
-			RefreshList( gameObject);
-		}
+        void ComponentIndexChanged(GUIBase sender) {
+            GUIDelayedIntField field = sender as GUIDelayedIntField;
+            GameObject gameObject = SelectedGameObject();
 
-		#endregion
+            ReorderComponent(gameObject, field.previousValue, field.value);
+            RefreshList(gameObject);
+        }
 
-		void ReorderComponent( GameObject gameObject, int index, int newIndex)
-		{
-			Component component = GetComponent( gameObject, index);
-			if( component != null)
-			{
-				if( newIndex < index)
-				{
-					while( UnityEditorInternal.ComponentUtility.MoveComponentUp( component) && --index != newIndex) {}
-				}
-				else if( newIndex > index)
-				{
-					while( UnityEditorInternal.ComponentUtility.MoveComponentDown( component) && ++index != newIndex) {}
-				}
-			}
-		}
+        #endregion
 
-		GameObject SelectedGameObject()
-		{
-			UnityEngine.Object[] gameObjects = Selection.GetFiltered( typeof( GameObject), 
-																	  SelectionMode.Editable | SelectionMode.TopLevel);
-			return gameObjects.Length > 0 ? gameObjects[0] as GameObject : null;
-		}
+        void ReorderComponent(GameObject gameObject, int index, int newIndex) {
+            Component component = GetComponent(gameObject, index);
+            if (component != null)
+            {
+                if (newIndex < index)
+                {
+                    while (UnityEditorInternal.ComponentUtility.MoveComponentUp(component) && --index != newIndex) { }
+                }
+                else if (newIndex > index)
+                {
+                    while (UnityEditorInternal.ComponentUtility.MoveComponentDown(component) && ++index != newIndex) { }
+                }
+            }
+        }
 
-		Component GetComponent( GameObject gameObject, int index)
-		{
-			if( gameObject != null)
-			{
-				Component[] components = gameObject.GetComponents<Component>();
+        GameObject SelectedGameObject() {
+            UnityEngine.Object[] gameObjects = Selection.GetFiltered(typeof(GameObject),
+                                                                      SelectionMode.Editable | SelectionMode.TopLevel);
+            return gameObjects.Length > 0 ? gameObjects[0] as GameObject : null;
+        }
 
-				if( index >= 0 && index < components.Length)
-				{
-					return components[ index];
-				}
-			}
+        Component GetComponent(GameObject gameObject, int index) {
+            if (gameObject != null)
+            {
+                Component[] components = gameObject.GetComponents<Component>();
 
-			return null;
-		}
+                if (index >= 0 && index < components.Length)
+                {
+                    return components[index];
+                }
+            }
 
-		void OnHierarchyChange()
-		{
-			RefreshList( SelectedGameObject());
-		}
+            return null;
+        }
 
-		void OnSelectionChange()
-		{
-			RefreshList( SelectedGameObject());
-		}
+        void OnHierarchyChange() {
+            RefreshList(SelectedGameObject());
+        }
 
-		void OnEnable()
-		{
-			RefreshList( SelectedGameObject());
-		}
+        void OnSelectionChange() {
+            RefreshList(SelectedGameObject());
+        }
 
-		void OnDisable()
-		{
-			_gui = null;
-		}
+        void OnEnable() {
+            RefreshList(SelectedGameObject());
+        }
 
-		void OnGUI()
-		{
-			if( _gui != null)
-			{
-				_gui.OnGUI();
-			}
-		}
-	}
+        void OnDisable() {
+            _gui = null;
+        }
+
+        void OnGUI() {
+            if (_gui != null)
+            {
+                _gui.OnGUI();
+            }
+        }
+    }
 }

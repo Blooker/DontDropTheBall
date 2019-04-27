@@ -21,37 +21,30 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
 //  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using UnityEngine;
 using UnityEditor;
-using System.Collections;
+using UnityEngine;
 
-namespace kode80.GUIWrapper
-{
-	public class GUIVertical : GUIBaseContainer 
-	{
-		public GUILayoutOption[] layoutOptions;
-		public GUIStyle style;
+namespace kode80.GUIWrapper {
+    public class GUIVertical : GUIBaseContainer {
+        public GUILayoutOption[] layoutOptions;
+        public GUIStyle style;
 
-		public GUIVertical( GUIStyle style, params GUILayoutOption[] options)
-		{
-			layoutOptions = options;
-			this.style = style;
-		}
+        public GUIVertical(GUIStyle style, params GUILayoutOption[] options) {
+            layoutOptions = options;
+            this.style = style;
+        }
 
-		public GUIVertical( params GUILayoutOption[] options)
-		{
-			layoutOptions = options;
-			this.style = new GUIStyle();
-		}
+        public GUIVertical(params GUILayoutOption[] options) {
+            layoutOptions = options;
+            this.style = new GUIStyle();
+        }
 
-		protected override void BeginContainerOnGUI()
-		{
-			EditorGUILayout.BeginVertical( style, layoutOptions);
-		}
-		
-		protected override void EndContainerOnGUI()
-		{
-			EditorGUILayout.EndVertical();
-		}
-	}
+        protected override void BeginContainerOnGUI() {
+            EditorGUILayout.BeginVertical(style, layoutOptions);
+        }
+
+        protected override void EndContainerOnGUI() {
+            EditorGUILayout.EndVertical();
+        }
+    }
 }

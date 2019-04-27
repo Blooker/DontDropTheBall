@@ -19,9 +19,9 @@ Shader "Hidden/kode80/PixelRender/IrisWipe"
 {
 	Properties
 	{
-		_MainTex ("Texture", 2D) = "white" {}
+		_MainTex("Texture", 2D) = "white" {}
 	}
-	SubShader
+		SubShader
 	{
 		// No culling or depth
 		Cull Off ZWrite Off ZTest Always
@@ -31,7 +31,7 @@ Shader "Hidden/kode80/PixelRender/IrisWipe"
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
-			
+
 			#include "UnityCG.cginc"
 
 			struct appdata
@@ -46,26 +46,26 @@ Shader "Hidden/kode80/PixelRender/IrisWipe"
 				float4 vertex : SV_POSITION;
 			};
 
-			v2f vert (appdata v)
+			v2f vert(appdata v)
 			{
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = v.uv;
 				return o;
 			}
-			
+
 			sampler2D _MainTex;
 			float2 _Center;
 			float2 _Aspect;
 			float _MaxRadius;
 			float _Position;
 
-			fixed4 frag (v2f i) : SV_Target
+			fixed4 frag(v2f i) : SV_Target
 			{
 				fixed4 col = tex2D(_MainTex, i.uv);
 				float2 uv = i.uv * _Aspect;
 
-				return col * 1.0 - step( _Position, distance( _Center, uv) / _MaxRadius);
+				return col * 1.0 - step(_Position, distance(_Center, uv) / _MaxRadius);
 			}
 			ENDCG
 		}

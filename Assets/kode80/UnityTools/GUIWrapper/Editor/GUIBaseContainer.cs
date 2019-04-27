@@ -21,62 +21,51 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
 //  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
 
-namespace kode80.GUIWrapper
-{
-	public class GUIBaseContainer : GUIBase
-	{
-		private List<GUIBase> _children;
+namespace kode80.GUIWrapper {
+    public class GUIBaseContainer : GUIBase {
+        private List<GUIBase> _children;
 
-		protected virtual bool areChildrenHidden { get { return false; } }
+        protected virtual bool areChildrenHidden { get { return false; } }
 
-		public GUIBaseContainer()
-		{
-			_children = new List<GUIBase>();
-		}
+        public GUIBaseContainer() {
+            _children = new List<GUIBase>();
+        }
 
-		public GUIBase Add( GUIBase child)
-		{
-			_children.Add( child);
-			return child;
-		}
+        public GUIBase Add(GUIBase child) {
+            _children.Add(child);
+            return child;
+        }
 
-		public void Remove( GUIBase child)
-		{
-			_children.Remove( child);
-		}
+        public void Remove(GUIBase child) {
+            _children.Remove(child);
+        }
 
-		public void RemoveAll()
-		{
-			_children.Clear();
-		}
+        public void RemoveAll() {
+            _children.Clear();
+        }
 
-		protected override void CustomOnGUI()
-		{
-			BeginContainerOnGUI();
+        protected override void CustomOnGUI() {
+            BeginContainerOnGUI();
 
-			if( areChildrenHidden == false)
-			{
-				foreach( GUIBase gui in _children)
-				{
-					gui.OnGUI();
-				}
-			}
+            if (areChildrenHidden == false)
+            {
+                foreach (GUIBase gui in _children)
+                {
+                    gui.OnGUI();
+                }
+            }
 
-			EndContainerOnGUI();
-		}
+            EndContainerOnGUI();
+        }
 
-		protected virtual void BeginContainerOnGUI()
-		{
-			// Subclasses implement 'opening' container GUI code here
-		}
+        protected virtual void BeginContainerOnGUI() {
+            // Subclasses implement 'opening' container GUI code here
+        }
 
-		protected virtual void EndContainerOnGUI()
-		{
-			// Subclasses implement 'closing' container GUI code here
-		}
-	}
+        protected virtual void EndContainerOnGUI() {
+            // Subclasses implement 'closing' container GUI code here
+        }
+    }
 }

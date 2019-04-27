@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class CameraController : MonoBehaviour {
 
@@ -13,20 +11,20 @@ public class CameraController : MonoBehaviour {
     }
 
     // Use this for initialization
-    void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+    void Start() {
 
-    public Camera GetMainCam () {
+    }
+
+    // Update is called once per frame
+    void Update() {
+
+    }
+
+    public Camera GetMainCam() {
         return cameras[mainCamInd];
     }
 
-    public Camera[] GetAllCams () {
+    public Camera[] GetAllCams() {
         return cameras;
     }
 

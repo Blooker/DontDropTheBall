@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEditor;
+﻿using UnityEditor;
 using UnityEngine;
 
 [RequireComponent(typeof(Rigidbody2D))]
@@ -49,8 +47,8 @@ public class PlayerController : MonoBehaviour {
     [SerializeField] private float atkForce;
     [SerializeField] private float atkMaxPauseTime;
     [SerializeField] private int maxAtkDashesValue = 2;
-    [SerializeField] private float minAtkDashSpeed = 5;    
-    [SerializeField] private float maxAtkDashDist = 5f;    
+    [SerializeField] private float minAtkDashSpeed = 5;
+    [SerializeField] private float maxAtkDashDist = 5f;
 
     private float moveInputX;
 
@@ -64,7 +62,7 @@ public class PlayerController : MonoBehaviour {
 
     private float wJumpMoveSleepTimer = 0;
 
-    private enum DashType {Move, Attack};
+    private enum DashType { Move, Attack };
     private DashType lastDashType;
 
     private int numMoveDashes = 0;
@@ -116,34 +114,42 @@ public class PlayerController : MonoBehaviour {
     }
 
     void FixedUpdate() {
-        if (!isDashing) {
+        if (!isDashing)
+        {
             UpdateVertChecks();
         }
     }
 
     // Update is called once per frame
     void Update() {
+        rb.velocity = new Vector2(moveInputX * speed, rb.velocity.y);
+
         if (isLanded)
             Land();
 
-        if (isJumping && rb.velocity.y < 0) {
+        if (isJumping && rb.velocity.y < 0)
+        {
             EndJump();
         }
 
         if (isHitCeiling)
             HitCeiling();
 
-        if (isWallSliding && rb.velocity.y <= 0) {
+        if (isWallSliding && rb.velocity.y <= 0)
+        {
             rb.AddForce(Vector2.up * wFallSpeedDecrease * Time.deltaTime);
         }
 
-        if (wJumpMoveSleepTimer > 0) {
+        if (wJumpMoveSleepTimer > 0)
+        {
             wJumpMoveSleepTimer -= Time.deltaTime;
         }
 
-        if (dshLerpValue < dshLerpLimit) {
+        if (dshLerpValue < dshLerpLimit)
+        {
             transform.position = Vector3.Lerp(dshStart, dshEnd, dshLerpValue);
-            if (lastDashType == DashType.Attack && IsTouchingBall() && canAttack) {
+            if (lastDashType == DashType.Attack && IsTouchingBall() && canAttack)
+            {
                 dshLerpLimit *= 0.9f;
 
                 HitBall();
@@ -152,7 +158,9 @@ public class PlayerController : MonoBehaviour {
             }
 
             dshLerpValue += dshCurrentSpeed * Time.deltaTime;
-        } else if (isDashing) {
+        }
+        else if (isDashing)
+        {
             EndDash();
         }
     }
@@ -165,64 +173,86 @@ public class PlayerController : MonoBehaviour {
 
         float _acceleration = acceleration * Time.deltaTime;
 
-        if (wJumpMoveSleepTimer > 0) {
+        if (wJumpMoveSleepTimer > 0)
+        {
             horiz = 0;
 
-            if (wallOnRightSide) {
+            if (wallOnRightSide)
+            {
                 moveInputX = -1;
-            } else {
+            }
+            else
+            {
                 moveInputX = 1;
             }
-        } else {
-            if (!isGrounded) {
+        }
+        else
+        {
+            if (!isGrounded)
+            {
                 moveDelta = _acceleration / 2;
             }
-            else if (moveInputX > 0 && horiz <= 0 || moveInputX <= 0 && horiz > 0) {
+            else if (moveInputX > 0 && horiz <= 0 || moveInputX <= 0 && horiz > 0)
+            {
                 moveDelta = _acceleration * 2;
             }
-            else {
+            else
+            {
                 moveDelta = _acceleration;
             }
 
             GameObject wallTouchedRight = CheckWallRight();
             GameObject wallTouchedLeft = CheckWallLeft();
 
-            if (wallTouchedRight != null && horiz > 0) {
+            if (wallTouchedRight != null && horiz > 0)
+            {
                 moveInputX = 0;
-                if (!isGrounded) {
+                if (!isGrounded)
+                {
                     StartWallSlide(true, wallTouchedRight);
                 }
-                else if (isWallSliding) {
+                else if (isWallSliding)
+                {
                     EndWallSlide();
                 }
             }
-            else if (wallTouchedLeft != null && horiz < 0) {
+            else if (wallTouchedLeft != null && horiz < 0)
+            {
                 moveInputX = 0;
-                if (!isGrounded) {
+                if (!isGrounded)
+                {
                     StartWallSlide(false, wallTouchedLeft);
                 }
-                else if (isWallSliding) {
+                else if (isWallSliding)
+                {
                     EndWallSlide();
                 }
             }
-            else {
+            else
+            {
                 moveInputX = Mathf.MoveTowards(moveInputX, horiz, moveDelta);
                 if (isWallSliding)
                     EndWallSlide();
             }
         }
 
-        if (moveInputX != 0) {
+        if (moveInputX != 0)
+        {
             grCheckOffsetX = grCheckMoveOffsetX;
-        } else {
+        }
+        else
+        {
             grCheckOffsetX = 0;
         }
 
-        rb.velocity = new Vector2(moveInputX * speed, rb.velocity.y);
+        //rb.velocity = new Vector2(moveInputX * speed, rb.velocity.y);
 
-        if (!playerAnim.IsFacingRight() && moveInputX > 0) {
+        if (!playerAnim.IsFacingRight() && moveInputX > 0)
+        {
             playerAnim.LookRight();
-        } else if (playerAnim.IsFacingRight() && moveInputX < 0) {
+        }
+        else if (playerAnim.IsFacingRight() && moveInputX < 0)
+        {
             playerAnim.LookLeft();
         }
     }
@@ -231,15 +261,19 @@ public class PlayerController : MonoBehaviour {
         if (pauseOnJump)
             Debug.Break();
 
-        if (isWallSliding) {
+        if (isWallSliding)
+        {
             WallJump();
-        } else {
+        }
+        else
+        {
             GroundJump();
-        }        
+        }
     }
 
-    public void EndJump () {
-        if (isJumping && rb.velocity.y > 0) {
+    public void EndJump() {
+        if (isJumping && rb.velocity.y > 0)
+        {
             Vector2 vel = rb.velocity;
             vel.y = rb.velocity.y / 4f;
             rb.velocity = vel;
@@ -267,10 +301,13 @@ public class PlayerController : MonoBehaviour {
         float _dist;
         float _speed;
 
-        if (dist > moveDashDist) {
+        if (dist > moveDashDist)
+        {
             _dist = moveDashDist;
             _speed = moveDashSpeed;
-        } else {
+        }
+        else
+        {
             _dist = dist;
             _speed = (moveDashDist * moveDashSpeed) / dist;
         }
@@ -281,42 +318,49 @@ public class PlayerController : MonoBehaviour {
         playerAnim.StartMoveDash();
     }
 
-    public void Aim (float horiz, float vert) {
+    public void Aim(float horiz, float vert) {
         lastAimDir = new Vector2(horiz, vert).normalized;
         playerAnim.Aim(lastAimDir);
     }
 
-    public void Attack () {
+    public void Attack() {
         atkDir = lastAimDir;
 
-        if (isGrounded && IsTouchingBall()) {
+        if (isGrounded && IsTouchingBall())
+        {
             HitBall();
-        } else if (atkDashCounter < maxAtkDashes) {
-            if (isDashing) {
+        }
+        else if (atkDashCounter < maxAtkDashes)
+        {
+            if (isDashing)
+            {
                 EndDash();
             }
 
-            atkDashDist = maxAtkDashDist / (1.5f*(atkDashCounter+1));
-            atkDashSpeed = minAtkDashSpeed * (1.5f*(atkDashCounter+1));
+            atkDashDist = maxAtkDashDist / (1.5f * (atkDashCounter + 1));
+            atkDashSpeed = minAtkDashSpeed * (1.5f * (atkDashCounter + 1));
 
             lastDashType = DashType.Attack;
             StartDash(lastAimDir.x, lastAimDir.y, atkDashDist, atkDashSpeed);
-        } else if (IsTouchingBall()) {
+        }
+        else if (IsTouchingBall())
+        {
             HitBall();
         }
     }
 
-    public void SetBall (BallController _ball) {
+    public void SetBall(BallController _ball) {
         ball = _ball;
         ballColl = ball.GetComponent<Collider2D>();
     }
 
-    private void GroundJump () {
+    private void GroundJump() {
         if (isGrounded)
             numJumps += 1;
 
-        if (numJumps > 0) {
-            rb.velocity = Vector2.up * jumpForce;
+        if (numJumps > 0)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
             playerAnim.SpawnJumpSmoke();
             numJumps -= 1;
         }
@@ -324,8 +368,8 @@ public class PlayerController : MonoBehaviour {
         isJumping = true;
     }
 
-    private void WallJump () {
-        rb.velocity = Vector2.up * wJumpUpForce;
+    private void WallJump() {
+        rb.velocity = new Vector2(rb.velocity.x, wJumpUpForce);
         playerAnim.SpawnJumpSmoke();
 
         wJumpMoveSleepTimer = wJumpMoveSleepAmount;
@@ -335,14 +379,15 @@ public class PlayerController : MonoBehaviour {
     }
 
     // Called when the player has just landed on the ground
-    void Land () {
+    void Land() {
         ResetExtraJumps();
         ResetAirAttacks();
 
         if (numMoveDashes < maxDashes)
             ResetDashes(true);
 
-        if (rb.velocity.y < 0) {
+        if (rb.velocity.y < 0)
+        {
             Vector3 vel = rb.velocity;
             vel.y = 0;
             rb.velocity = vel;
@@ -354,8 +399,9 @@ public class PlayerController : MonoBehaviour {
     }
 
     // Called when the player has just touched the ceiling
-    void HitCeiling () {
-        if (rb.velocity.y > 0) {
+    void HitCeiling() {
+        if (rb.velocity.y > 0)
+        {
             Vector3 vel = rb.velocity;
             vel.y = 0;
             rb.velocity = vel;
@@ -367,16 +413,19 @@ public class PlayerController : MonoBehaviour {
     }
 
     void StartWallSlide(bool wallOnRight, GameObject wall) {
-        if(!isWallSliding)
+        if (!isWallSliding)
             //Debug.Log("wall slide start on " + (wallOnRight ? "right" : "left"));
 
-        isWallSliding = true;
+            isWallSliding = true;
         wallOnRightSide = wallOnRight;
 
         Vector2 currentPos = transform.position;
-        if (wallOnRight) {
+        if (wallOnRight)
+        {
             currentPos.x = wall.transform.position.x - (transform.localScale.x / 2f) - (wall.GetComponent<BoxCollider2D>().size.x / 2f);
-        } else {
+        }
+        else
+        {
             currentPos.x = wall.transform.position.x + (transform.localScale.x / 2f) + (wall.GetComponent<BoxCollider2D>().size.x / 2f);
         }
         transform.position = currentPos;
@@ -395,14 +444,19 @@ public class PlayerController : MonoBehaviour {
 
         Vector3 dashDir = new Vector2(horiz, vert).normalized;
 
-        if (dashDir.magnitude == 0) {
+        if (dashDir.magnitude == 0)
+        {
             return;
         }
 
-        if(isWallSliding) {
-            if (wallOnRightSide && dashDir.x > 0) {
+        if (isWallSliding)
+        {
+            if (wallOnRightSide && dashDir.x > 0)
+            {
                 return;
-            } else if (!wallOnRightSide && dashDir.x < 0) {
+            }
+            else if (!wallOnRightSide && dashDir.x < 0)
+            {
                 return;
             }
         }
@@ -410,18 +464,21 @@ public class PlayerController : MonoBehaviour {
         RaycastHit2D[] hits = new RaycastHit2D[1];
 
         dshStart = transform.position;
-        if (Physics2D.BoxCast(transform.position, transform.localScale * 0.95f, 0, dashDir, dshFilter, hits, dashDistance) > 0) {
+        if (Physics2D.BoxCast(transform.position, transform.localScale * 0.95f, 0, dashDir, dshFilter, hits, dashDistance) > 0)
+        {
             //Debug.Log("Obstacle found");
             dshEnd = hits[0].point;
             dshColNormal = hits[0].normal;
 
             //Debug.Log(dshColNormal);
 
-            if (dashDir.y == 0) {
+            if (dashDir.y == 0)
+            {
                 dshEnd.y = transform.position.y;
             }
 
-            if (dashDir.x == 0) {
+            if (dashDir.x == 0)
+            {
                 dshEnd.x = transform.position.x;
             }
 
@@ -431,14 +488,16 @@ public class PlayerController : MonoBehaviour {
 
             float startToEndDist = Vector3.Distance(dshStart, dshEnd);
 
-            if (startToEndDist < 3.5f) {
+            if (startToEndDist < 3.5f)
+            {
                 EndDash();
                 return;
             }
 
             dshCurrentSpeed = dashSpeed / (startToEndDist / dashDistance);
         }
-        else {
+        else
+        {
             dshEnd = transform.position + dashDir * dashDistance;
             dshCurrentSpeed = dashSpeed;
         }
@@ -449,8 +508,9 @@ public class PlayerController : MonoBehaviour {
         isDashing = true;
     }
 
-    void EndDash () {
-        switch (lastDashType) {
+    void EndDash() {
+        switch (lastDashType)
+        {
             case DashType.Move:
                 numMoveDashes -= 1;
                 ResetAirAttacks();
@@ -473,20 +533,24 @@ public class PlayerController : MonoBehaviour {
 
         UpdateVertChecks();
 
-        if (isGrounded) {
+        if (isGrounded)
+        {
             ResetDashes(false);
             ResetAirAttacks();
-        } else {
+        }
+        else
+        {
             playerAnim.EndDash(numMoveDashes > 0);
         }
 
         isDashing = false;
     }
 
-    void HitBall () {
+    void HitBall() {
         ball.Hit(atkDir, atkForce);
-        
-        if (numMoveDashes <= 0) {
+
+        if (numMoveDashes <= 0)
+        {
             ResetDashes(true);
         }
 
@@ -494,16 +558,17 @@ public class PlayerController : MonoBehaviour {
         isHitBall = true;
     }
 
-    bool IsTouchingBall () {
+    bool IsTouchingBall() {
         return ballColl.bounds.Intersects(playerColl.bounds);
     }
 
-    void UpdateVertChecks () {
+    void UpdateVertChecks() {
         // Ground
         RaycastHit2D[] groundResult = CheckGround();
         bool touchedGround = groundResult != null;
 
-        if (!isGrounded && touchedGround) {
+        if (!isGrounded && touchedGround)
+        {
             isLanded = true;
             lastLandPos = groundResult[0].point;
         }
@@ -514,7 +579,8 @@ public class PlayerController : MonoBehaviour {
         RaycastHit2D[] ceilResult = CheckCeiling();
         bool touchedCeiling = ceilResult != null;
 
-        if (!isOnCeiling && touchedCeiling) {
+        if (!isOnCeiling && touchedCeiling)
+        {
             isHitCeiling = true;
             lastCeilHitPos = ceilResult[0].point;
         }
@@ -522,16 +588,18 @@ public class PlayerController : MonoBehaviour {
         isOnCeiling = touchedCeiling;
     }
 
-    RaycastHit2D[] CheckGround () {
+    RaycastHit2D[] CheckGround() {
         RaycastHit2D[] hits = new RaycastHit2D[1];
 
         Vector3 _grCheckScale = vertCheckScale;
-        if (rb.velocity.y <= 0) {
+        if (rb.velocity.y <= 0)
+        {
             float yScale = ExtensionMethods.Map(rb.velocity.y, 0, -grCheckMaxVel, vertCheckScale.y, vertCheckMaxYScale);
             _grCheckScale = new Vector3(vertCheckScale.x, yScale);
         }
 
-        if (Physics2D.BoxCast(grCheckStart.position + Vector3.down*(_grCheckScale.y/2f), _grCheckScale, 0, Vector2.down, groundFilter, hits, _grCheckScale.y) > 0) {
+        if (Physics2D.BoxCast(grCheckStart.position + Vector3.down * (_grCheckScale.y / 2f), _grCheckScale, 0, Vector2.down, groundFilter, hits, _grCheckScale.y) > 0)
+        {
             return hits;
         }
 
@@ -542,12 +610,14 @@ public class PlayerController : MonoBehaviour {
         RaycastHit2D[] hits = new RaycastHit2D[1];
 
         Vector3 _ceilCheckScale = vertCheckScale;
-        if (rb.velocity.y >= 0) {
+        if (rb.velocity.y >= 0)
+        {
             float yScale = ExtensionMethods.Map(rb.velocity.y, 0, ceilCheckMaxVel, vertCheckScale.y, vertCheckMaxYScale);
             _ceilCheckScale = new Vector3(vertCheckScale.x, yScale);
         }
 
-        if (Physics2D.BoxCast(ceilCheckStart.position + Vector3.up * (_ceilCheckScale.y / 2f), _ceilCheckScale, 0, Vector2.up, ceilFilter, hits, _ceilCheckScale.y) > 0) {
+        if (Physics2D.BoxCast(ceilCheckStart.position + Vector3.up * (_ceilCheckScale.y / 2f), _ceilCheckScale, 0, Vector2.up, ceilFilter, hits, _ceilCheckScale.y) > 0)
+        {
             return hits;
         }
 
@@ -555,15 +625,20 @@ public class PlayerController : MonoBehaviour {
     }
 
     // Checks for wall to left of player. Returns wall object that is in contact with the player.
-    GameObject CheckWallLeft () {
+    GameObject CheckWallLeft() {
         RaycastHit2D hitUp = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), Vector2.left, wallCheckDist, whatIsWall);
         RaycastHit2D hitDown = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y - wallCheckOffsetY), Vector2.left, wallCheckDist, whatIsWall);
         GameObject result;
-        if (hitUp) {
+        if (hitUp)
+        {
             result = hitUp.collider.gameObject;
-        } else if (hitDown) {
+        }
+        else if (hitDown)
+        {
             result = hitDown.collider.gameObject;
-        } else {
+        }
+        else
+        {
             result = null;
         }
         return result;
@@ -574,26 +649,31 @@ public class PlayerController : MonoBehaviour {
         RaycastHit2D hitUp = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y + wallCheckOffsetY), Vector2.right, wallCheckDist, whatIsWall);
         RaycastHit2D hitDown = Physics2D.Raycast(new Vector2(transform.position.x, transform.position.y - wallCheckOffsetY), Vector2.right, wallCheckDist, whatIsWall);
         GameObject result;
-        if (hitUp) {
+        if (hitUp)
+        {
             result = hitUp.collider.gameObject;
-        } else if (hitDown) {
+        }
+        else if (hitDown)
+        {
             result = hitDown.collider.gameObject;
-        } else {
+        }
+        else
+        {
             result = null;
         }
         return result;
     }
 
-    void ResetExtraJumps () {
-        numJumps = maxJumps-1;
+    void ResetExtraJumps() {
+        numJumps = maxJumps - 1;
     }
 
-    void ResetDashes (bool playAnimation) {
+    void ResetDashes(bool playAnimation) {
         numMoveDashes = maxDashes;
         playerAnim.ResetDashes(playAnimation);
     }
 
-    void ResetAirAttacks () {
+    void ResetAirAttacks() {
         atkDashCounter = 0;
         maxAtkDashes = maxAtkDashesValue;
     }
@@ -603,8 +683,10 @@ public class PlayerController : MonoBehaviour {
         // Ground check
         Gizmos.color = Color.yellow;
         Vector3 _grCheckScale = vertCheckScale;
-        if (EditorApplication.isPlaying && rb != null) {
-            if (rb.velocity.y <= 0) {
+        if (EditorApplication.isPlaying && rb != null)
+        {
+            if (rb.velocity.y <= 0)
+            {
                 float yScale = ExtensionMethods.Map(rb.velocity.y, 0, -grCheckMaxVel, vertCheckScale.y, vertCheckMaxYScale);
                 _grCheckScale = new Vector3(vertCheckScale.x, yScale);
             }
@@ -614,8 +696,10 @@ public class PlayerController : MonoBehaviour {
 
         // Ceiling check
         Vector3 _ceilCheckScale = vertCheckScale;
-        if (EditorApplication.isPlaying && rb != null) {
-            if (rb.velocity.y >= 0) {
+        if (EditorApplication.isPlaying && rb != null)
+        {
+            if (rb.velocity.y >= 0)
+            {
                 float yScale = ExtensionMethods.Map(rb.velocity.y, 0, ceilCheckMaxVel, vertCheckScale.y, vertCheckMaxYScale);
                 _ceilCheckScale = new Vector3(vertCheckScale.x, yScale);
             }

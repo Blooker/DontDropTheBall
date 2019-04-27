@@ -21,43 +21,37 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
 //  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using UnityEngine;
 using UnityEditor;
-using System.Collections;
+using UnityEngine;
 
-namespace kode80.GUIWrapper
-{
-	public class GUIFoldout : GUIBaseContainer 
-	{
-		public bool isOpen;
+namespace kode80.GUIWrapper {
+    public class GUIFoldout : GUIBaseContainer {
+        public bool isOpen;
 
-		private GUIContent _content;
-		public GUIContent content { get { return _content; } }
+        private GUIContent _content;
+        public GUIContent content { get { return _content; } }
 
-		protected override bool areChildrenHidden { get { return isOpen == false; } }
-		
-		public GUIFoldout( GUIContent content)
-		{
-			_content = content;
-		}
-		
-		protected override void BeginContainerOnGUI()
-		{
-			isOpen = EditorGUILayout.Foldout( isOpen, _content);
-			if( isOpen)
-			{
-				EditorGUILayout.BeginVertical();
-				EditorGUI.indentLevel++;
-			}
-		}
-		
-		protected override void EndContainerOnGUI()
-		{
-			if( isOpen)
-			{
-				EditorGUI.indentLevel--;
-				EditorGUILayout.EndHorizontal();
-			}
-		}
-	}
+        protected override bool areChildrenHidden { get { return isOpen == false; } }
+
+        public GUIFoldout(GUIContent content) {
+            _content = content;
+        }
+
+        protected override void BeginContainerOnGUI() {
+            isOpen = EditorGUILayout.Foldout(isOpen, _content);
+            if (isOpen)
+            {
+                EditorGUILayout.BeginVertical();
+                EditorGUI.indentLevel++;
+            }
+        }
+
+        protected override void EndContainerOnGUI() {
+            if (isOpen)
+            {
+                EditorGUI.indentLevel--;
+                EditorGUILayout.EndHorizontal();
+            }
+        }
+    }
 }

@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerAnim : MonoBehaviour {
 
@@ -56,7 +54,7 @@ public class PlayerAnim : MonoBehaviour {
     }
 
     // Use this for initialization
-    void Start () {
+    void Start() {
         if (!facingRight)
             LookLeft();
 
@@ -70,10 +68,12 @@ public class PlayerAnim : MonoBehaviour {
         if (jumpSmokeTimer > 0)
             jumpSmokeTimer -= Time.deltaTime;
 
-        if (jumpSmoke != null) {
+        if (jumpSmoke != null)
+        {
             jumpSmoke.transform.position = jumpSmokeOrigin.transform.position;
 
-            if (jumpSmokeTimer <= 0) {
+            if (jumpSmokeTimer <= 0)
+            {
                 jumpSmoke.Stop();
                 Destroy(jumpSmoke.gameObject, 1f);
 
@@ -81,24 +81,29 @@ public class PlayerAnim : MonoBehaviour {
             }
         }
 
-        if (bodyFlashTimer > -1) {
+        if (bodyFlashTimer > -1)
+        {
             bodyFlashTimer += Time.deltaTime * bodyFlashSpeed;
             if (bodyFlashTimer > 2)
                 bodyFlashTimer = 0;
 
             SetBodyFlash(bodyFlashTimer, bodyFlashMin, bodyFlashMax);
 
-            if (!outOfDashes) {
-                if (bodyFlashTimer >= 0.75f && !flashCountIncreased) {
+            if (!outOfDashes)
+            {
+                if (bodyFlashTimer >= 0.75f && !flashCountIncreased)
+                {
                     landFlashCount += 1;
                     flashCountIncreased = true;
                 }
 
-                if (bodyFlashTimer < 0.75f && flashCountIncreased) {
+                if (bodyFlashTimer < 0.75f && flashCountIncreased)
+                {
                     flashCountIncreased = false;
                 }
 
-                if (landFlashCount >= maxLandBodyFlashes) {
+                if (landFlashCount >= maxLandBodyFlashes)
+                {
                     bodyFlashTimer = -1;
                     SetBodyPaletteMix(0);
                 }
@@ -109,22 +114,23 @@ public class PlayerAnim : MonoBehaviour {
         isAiming = false;
     }
 
-    public void LookLeft () {
+    public void LookLeft() {
         facingRight = false;
         Vector3 localModelScale = modelParent.localScale;
         localModelScale.x = -1;
         modelParent.localScale = localModelScale;
     }
 
-    public void LookRight () {
+    public void LookRight() {
         facingRight = true;
         Vector3 localModelScale = modelParent.localScale;
         localModelScale.x = 1;
         modelParent.localScale = localModelScale;
     }
 
-    public void SpawnJumpSmoke () {
-        if (jumpSmoke != null) {
+    public void SpawnJumpSmoke() {
+        if (jumpSmoke != null)
+        {
             jumpSmoke.Stop();
             Destroy(jumpSmoke.gameObject, 1f);
 
@@ -136,14 +142,15 @@ public class PlayerAnim : MonoBehaviour {
     }
 
     #region Wall Slide
-    public void StartWallSlide (bool wallOnRight, GameObject wall) {
-        if (!ReferenceEquals(wall, lastWall)) {
+    public void StartWallSlide(bool wallOnRight, GameObject wall) {
+        if (!ReferenceEquals(wall, lastWall))
+        {
             SpawnWallSmoke(wallOnRight);
             lastWall = wall;
         }
     }
 
-    public void EndWallSlide () {
+    public void EndWallSlide() {
         wallSmoke.Stop();
         Destroy(wallSmoke.gameObject, 1f);
 
@@ -172,7 +179,7 @@ public class PlayerAnim : MonoBehaviour {
         outOfDashes = true;
     }
 
-    public void ResetDashes (bool playAnim) {
+    public void ResetDashes(bool playAnim) {
         if (!playAnim)
             return;
 
@@ -187,14 +194,14 @@ public class PlayerAnim : MonoBehaviour {
     }
     #endregion
 
-    public void Aim (Vector2 aimDir) {
-        
+    public void Aim(Vector2 aimDir) {
 
-        aimParent.transform.rotation = Quaternion.Euler(0,0,Mathf.Atan2(-aimDir.x, aimDir.y) *Mathf.Rad2Deg);
+
+        aimParent.transform.rotation = Quaternion.Euler(0, 0, Mathf.Atan2(-aimDir.x, aimDir.y) * Mathf.Rad2Deg);
         isAiming = true;
     }
 
-    public bool IsFacingRight () {
+    public bool IsFacingRight() {
         return facingRight;
     }
 
@@ -203,7 +210,7 @@ public class PlayerAnim : MonoBehaviour {
         wallSmoke = Instantiate(wallSmokePfb, currentWallSmokeOrigin.transform.position, Quaternion.identity).GetComponent<ParticleSystem>();
     }
 
-    void SpawnAimIcons () {
+    void SpawnAimIcons() {
         aimParent = new GameObject("AimParent");
         aimParent.transform.parent = this.transform;
         aimParent.transform.localScale = Vector3.one;
@@ -219,13 +226,14 @@ public class PlayerAnim : MonoBehaviour {
         float worldMaxPos = ExtensionMethods.Map(aimSphereMinMax.y, 0, 1, aimDistFromPlayer, aimDistFromPlayer + aimLength);
 
         float lerpValue = 0;
-        for (int i = 0; i < numSpheres; i++) {
+        for (int i = 0; i < numSpheres; i++)
+        {
             GameObject newSphere = Instantiate(aimSpherePfb, aimParent.transform);
             newSphere.transform.localScale = Vector3.one * aimSphereSize;
 
             aimSphereDists[i] = Mathf.Lerp(worldMinPos, worldMaxPos, lerpValue);
             newSphere.transform.localPosition = aimSphereDists[i] * Vector3.up;
-                
+
             lerpValue += 1f / (numSpheres - 1);
         }
 
@@ -233,7 +241,7 @@ public class PlayerAnim : MonoBehaviour {
     }
 
     #region Colour palette
-    void SetBodyFlash (float timer, float min, float max) {
+    void SetBodyFlash(float timer, float min, float max) {
         float flashAmount = ExtensionMethods.Map(Mathf.Sin(bodyFlashTimer * Mathf.PI), -1, 1, bodyFlashMin, bodyFlashMax);
         SetBodyPaletteMix(flashAmount);
     }

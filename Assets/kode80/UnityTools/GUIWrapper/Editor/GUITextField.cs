@@ -21,38 +21,33 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
 //  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using UnityEngine;
 using UnityEditor;
-using System.Collections;
+using UnityEngine;
 
-namespace kode80.GUIWrapper
-{
-	public class GUITextField : GUIBase 
-	{
-		public string value;
+namespace kode80.GUIWrapper {
+    public class GUITextField : GUIBase {
+        public string value;
 
-		private GUIContent _content;
-		public GUIContent content { get { return _content; } }
-		
-		public GUITextField( GUIContent content, string value="", OnGUIAction action=null)
-		{
-			this.value = value;
-			
-			_content = content;
-			if( action != null)
-			{
-				onGUIAction += action;
-			}
-		}
-		
-		protected override void CustomOnGUI ()
-		{
-			string newValue = EditorGUILayout.TextField( _content, value);
-			if( newValue != value)
-			{
-				value = newValue;
-				CallGUIAction();
-			}
-		}
-	}
+        private GUIContent _content;
+        public GUIContent content { get { return _content; } }
+
+        public GUITextField(GUIContent content, string value = "", OnGUIAction action = null) {
+            this.value = value;
+
+            _content = content;
+            if (action != null)
+            {
+                onGUIAction += action;
+            }
+        }
+
+        protected override void CustomOnGUI() {
+            string newValue = EditorGUILayout.TextField(_content, value);
+            if (newValue != value)
+            {
+                value = newValue;
+                CallGUIAction();
+            }
+        }
+    }
 }

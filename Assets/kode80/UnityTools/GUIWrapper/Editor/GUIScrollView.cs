@@ -21,31 +21,25 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
 //  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using UnityEngine;
 using UnityEditor;
-using System.Collections;
+using UnityEngine;
 
-namespace kode80.GUIWrapper
-{
-	public class GUIScrollView : GUIBaseContainer 
-	{
-		public GUILayoutOption[] layoutOptions;
+namespace kode80.GUIWrapper {
+    public class GUIScrollView : GUIBaseContainer {
+        public GUILayoutOption[] layoutOptions;
 
-		private Vector2 _scrollPosition;
+        private Vector2 _scrollPosition;
 
-		public GUIScrollView( params GUILayoutOption[] options)
-		{
-			layoutOptions = options;
-		}
+        public GUIScrollView(params GUILayoutOption[] options) {
+            layoutOptions = options;
+        }
 
-		protected override void BeginContainerOnGUI()
-		{
-			_scrollPosition = EditorGUILayout.BeginScrollView( _scrollPosition, layoutOptions);
-		}
+        protected override void BeginContainerOnGUI() {
+            _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, layoutOptions);
+        }
 
-		protected override void EndContainerOnGUI()
-		{
-			EditorGUILayout.EndScrollView();
-		}
-	}
+        protected override void EndContainerOnGUI() {
+            EditorGUILayout.EndScrollView();
+        }
+    }
 }

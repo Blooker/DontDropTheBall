@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using XInputDotNetPure;
 
 public class PlayerInput : MonoBehaviour {
@@ -22,12 +20,12 @@ public class PlayerInput : MonoBehaviour {
 
 #endif
 
-    public void SetPlayer (PlayerController _playerController) {
+    public void SetPlayer(PlayerController _playerController) {
         playerController = _playerController;
     }
 
     // Use this for initialization
-    void Awake () {
+    void Awake() {
         playerController = GetComponent<PlayerController>();
         mouseSettings = GetComponent<MouseSettings>();
     }
@@ -40,7 +38,7 @@ public class PlayerInput : MonoBehaviour {
     }
 
     // Update is called once per frame
-    void Update () {
+    void Update() {
         if (playerController == null)
             return;
 
@@ -48,11 +46,14 @@ public class PlayerInput : MonoBehaviour {
         float vertMove = KeyInputHold(KeyCode.W, KeyCode.S);
 
 #if UNITY_STANDALONE_WIN || UNITY_EDITOR_WIN
-        if (!playerIndexSet || !prevState.IsConnected) {
-            for (int i = 0; i < 4; ++i) {
+        if (!playerIndexSet || !prevState.IsConnected)
+        {
+            for (int i = 0; i < 4; ++i)
+            {
                 PlayerIndex testPlayerIndex = (PlayerIndex)i;
                 GamePadState testState = GamePad.GetState(testPlayerIndex);
-                if (testState.IsConnected) {
+                if (testState.IsConnected)
+                {
                     Debug.Log(string.Format("GamePad found {0}", testPlayerIndex));
                     playerIndex = testPlayerIndex;
                     playerIndexSet = true;
@@ -71,105 +72,131 @@ public class PlayerInput : MonoBehaviour {
         bool leftDPAD = state.DPad.Left == ButtonState.Pressed, rightDPAD = state.DPad.Right == ButtonState.Pressed;
         bool upDPAD = state.DPad.Up == ButtonState.Pressed, downDPAD = state.DPad.Down == ButtonState.Pressed;
 
-        if (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0) {
+        if (Input.GetAxis("Mouse X") != 0 || Input.GetAxis("Mouse Y") != 0)
+        {
             mouseSettings.SetCursorPos(Input.mousePosition, playerController.transform.position.z);
             mouseSettings.SetVisible(true);
         }
 
-        if (Input.GetMouseButtonDown(1)) {
+        if (Input.GetMouseButtonDown(1))
+        {
             playerController.Dash(playerToMouse.x, playerToMouse.y, playerToMouse.magnitude);
             mouseSettings.SetVisible(true);
         }
 
         // If left stick movement is being picked up
-        if (leftStick.magnitude >= 0.35f) {
+        if (leftStick.magnitude >= 0.35f)
+        {
             playerController.Move(leftStick.x);
 
-            if (OnXInputButtonDown(prevState.Buttons.LeftShoulder, state.Buttons.LeftShoulder)) {
+            if (OnXInputButtonDown(prevState.Buttons.LeftShoulder, state.Buttons.LeftShoulder))
+            {
                 playerController.Dash(leftStick.x, leftStick.y);
             }
 
             mouseSettings.SetVisible(false);
-        } else if (leftDPAD || rightDPAD || upDPAD || downDPAD) {
+        }
+        else if (leftDPAD || rightDPAD || upDPAD || downDPAD)
+        {
             float xDir = 0;
-            if (leftDPAD) {
+            if (leftDPAD)
+            {
                 xDir -= 1;
-            } 
-            if (rightDPAD) {
+            }
+            if (rightDPAD)
+            {
                 xDir += 1;
             }
 
             float yDir = 0;
-            if(upDPAD) {
+            if (upDPAD)
+            {
                 yDir += 1;
             }
-            if(downDPAD) {
+            if (downDPAD)
+            {
                 yDir -= 1;
             }
 
             playerController.Move(xDir);
 
-            if (OnXInputButtonDown(prevState.Buttons.LeftShoulder, state.Buttons.LeftShoulder)) {
+            if (OnXInputButtonDown(prevState.Buttons.LeftShoulder, state.Buttons.LeftShoulder))
+            {
                 playerController.Dash(xDir, yDir);
             }
 
             mouseSettings.SetVisible(false);
         }
-        else if (horizMove != 0) {
+        else if (horizMove != 0)
+        {
             playerController.Move(horizMove);
 
             mouseSettings.SetVisible(true);
-        } else {
+        }
+        else
+        {
             playerController.Move(0);
         }
 
-        if (Input.GetMouseButton(0)) {
+        if (Input.GetMouseButton(0))
+        {
             playerController.Aim(playerToMouse.x, playerToMouse.y);
             mouseAiming = true;
 
             mouseSettings.SetVisible(true);
-        } else if (rightStick.magnitude >= 0.5f) {
+        }
+        else if (rightStick.magnitude >= 0.5f)
+        {
             playerController.Aim(rightStick.x, rightStick.y);
             stickAiming = true;
 
             mouseSettings.SetVisible(false);
         }
 
-        if (Input.GetMouseButtonUp(0) && mouseAiming) {
+        if (Input.GetMouseButtonUp(0) && mouseAiming)
+        {
             playerController.Attack();
             mouseAiming = false;
-        } else if (rightStick.magnitude < 0.5f && stickAiming) {
+        }
+        else if (rightStick.magnitude < 0.5f && stickAiming)
+        {
             playerController.Attack();
             stickAiming = false;
         }
 
 
         bool jumpKey = Input.GetKeyDown(KeyCode.Space);
-        if (jumpKey) {
+        if (jumpKey)
+        {
             mouseSettings.SetVisible(true);
         }
 
         bool jumpPad = OnXInputButtonDown(prevState.Buttons.A, state.Buttons.A);
-        if (jumpPad) {
+        if (jumpPad)
+        {
             mouseSettings.SetVisible(false);
         }
 
-        if (jumpKey || jumpPad) {
+        if (jumpKey || jumpPad)
+        {
             playerController.StartJump();
         }
 
 
         bool jumpCancelKey = Input.GetKeyDown(KeyCode.LeftShift);
-        if (jumpCancelKey) {
+        if (jumpCancelKey)
+        {
             mouseSettings.SetVisible(true);
         }
 
         bool jumpCancelPad = OnXInputButtonDown(prevState.Buttons.RightShoulder, state.Buttons.RightShoulder);
-        if (jumpCancelPad) {
+        if (jumpCancelPad)
+        {
             mouseSettings.SetVisible(false);
         }
 
-        if (jumpCancelKey || jumpCancelPad) {
+        if (jumpCancelKey || jumpCancelPad)
+        {
             playerController.EndJump();
         }
 #else
@@ -185,7 +212,8 @@ public class PlayerInput : MonoBehaviour {
     }
 
     bool OnXInputButtonDown(ButtonState prevState, ButtonState state) {
-        if (prevState == ButtonState.Released && state == ButtonState.Pressed) {
+        if (prevState == ButtonState.Released && state == ButtonState.Pressed)
+        {
             return true;
         }
 
@@ -193,7 +221,8 @@ public class PlayerInput : MonoBehaviour {
     }
 
     bool OnXInputButtonUp(ButtonState prevState, ButtonState state) {
-        if (prevState == ButtonState.Pressed && state == ButtonState.Released) {
+        if (prevState == ButtonState.Pressed && state == ButtonState.Released)
+        {
             return true;
         }
 
@@ -212,28 +241,32 @@ public class PlayerInput : MonoBehaviour {
         return result;
     }
 
-    Vector2 ApplyStickDeadzone (GamePadThumbSticks.StickValue stick, float stickDeadzone) {
+    Vector2 ApplyStickDeadzone(GamePadThumbSticks.StickValue stick, float stickDeadzone) {
         return ApplyStickDeadzone(new Vector2(stick.X, stick.Y), stickDeadzone);
     }
 
     Vector2 ApplyStickDeadzone(Vector2 stick, float stickDeadzone) {
         float stickX = stick.x;
-        if (stickX > 0) {
+        if (stickX > 0)
+        {
             stickX = Mathf.Clamp(stickX, stickDeadzone, 1);
             stickX = ExtensionMethods.Map(stickX, stickDeadzone, 1, 0, 1);
         }
-        else if (stickX < 0) {
+        else if (stickX < 0)
+        {
             stickX = Mathf.Clamp(stickX, -1, -stickDeadzone);
             stickX = ExtensionMethods.Map(stickX, -1, -stickDeadzone, -1, 0);
         }
 
 
         float stickY = stick.y;
-        if (stickY > 0) {
+        if (stickY > 0)
+        {
             stickY = Mathf.Clamp(stickY, stickDeadzone, 1);
             stickY = ExtensionMethods.Map(stickY, stickDeadzone, 1, 0, 1);
         }
-        else if (stickY < 0) {
+        else if (stickY < 0)
+        {
             stickY = Mathf.Clamp(stickY, -1, -stickDeadzone);
             stickY = ExtensionMethods.Map(stickY, -1, -stickDeadzone, -1, 0);
         }

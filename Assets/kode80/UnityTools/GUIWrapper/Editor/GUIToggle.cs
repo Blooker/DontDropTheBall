@@ -21,36 +21,31 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
 //  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using UnityEngine;
 using UnityEditor;
-using System.Collections;
+using UnityEngine;
 
-namespace kode80.GUIWrapper
-{
-	public class GUIToggle : GUIBase 
-	{
-		public bool isToggled;
+namespace kode80.GUIWrapper {
+    public class GUIToggle : GUIBase {
+        public bool isToggled;
 
-		private GUIContent _content;
-		public GUIContent content { get { return _content; } }
-		
-		public GUIToggle( GUIContent content, OnGUIAction action=null)
-		{
-			_content = content;
-			if( action != null)
-			{
-				onGUIAction += action;
-			}
-		}
-		
-		protected override void CustomOnGUI ()
-		{
-			bool newIsToggled = EditorGUILayout.Toggle( _content, isToggled);
-			if( newIsToggled != isToggled)
-			{
-				isToggled = newIsToggled;
-				CallGUIAction();
-			}
-		}
-	}
+        private GUIContent _content;
+        public GUIContent content { get { return _content; } }
+
+        public GUIToggle(GUIContent content, OnGUIAction action = null) {
+            _content = content;
+            if (action != null)
+            {
+                onGUIAction += action;
+            }
+        }
+
+        protected override void CustomOnGUI() {
+            bool newIsToggled = EditorGUILayout.Toggle(_content, isToggled);
+            if (newIsToggled != isToggled)
+            {
+                isToggled = newIsToggled;
+                CallGUIAction();
+            }
+        }
+    }
 }

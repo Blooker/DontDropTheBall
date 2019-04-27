@@ -21,44 +21,39 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
 //  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using UnityEngine;
 using UnityEditor;
-using System.Collections;
+using UnityEngine;
 
-namespace kode80.GUIWrapper
-{
-	public class GUIObjectField<T> : GUIBase where T : UnityEngine.Object
-	{
-		public T value;
-		public bool allowsSceneObjects;
+namespace kode80.GUIWrapper {
+    public class GUIObjectField<T> : GUIBase where T : UnityEngine.Object {
+        public T value;
+        public bool allowsSceneObjects;
 
-		private GUIContent _content;
-		public GUIContent content { get { return _content; } }
+        private GUIContent _content;
+        public GUIContent content { get { return _content; } }
 
-		public GUIObjectField( GUIContent content, bool allowsSceneObjects=true, OnGUIAction action=null, OnGUIPreAction preAction=null)
-		{
-			_content = content;
-			this.allowsSceneObjects = allowsSceneObjects;
-			if( preAction != null)
-			{
-				onGUIPreAction += preAction;
-			}
+        public GUIObjectField(GUIContent content, bool allowsSceneObjects = true, OnGUIAction action = null, OnGUIPreAction preAction = null) {
+            _content = content;
+            this.allowsSceneObjects = allowsSceneObjects;
+            if (preAction != null)
+            {
+                onGUIPreAction += preAction;
+            }
 
-			if( action != null)
-			{
-				onGUIAction += action;
-			}
-		}
+            if (action != null)
+            {
+                onGUIAction += action;
+            }
+        }
 
-		protected override void CustomOnGUI ()
-		{
-			T newValue = EditorGUILayout.ObjectField( _content, value, typeof( T), allowsSceneObjects) as T;
-			if( newValue != value)
-			{
-				CallGUIPreAction();
-				value = newValue;
-				CallGUIAction();
-			}
-		}
-	}
+        protected override void CustomOnGUI() {
+            T newValue = EditorGUILayout.ObjectField(_content, value, typeof(T), allowsSceneObjects) as T;
+            if (newValue != value)
+            {
+                CallGUIPreAction();
+                value = newValue;
+                CallGUIAction();
+            }
+        }
+    }
 }

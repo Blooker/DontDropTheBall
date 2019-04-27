@@ -19,9 +19,9 @@ Shader "Hidden/kode80/PixelRender/PixelOutline"
 {
 	Properties
 	{
-		_MainTex ("Texture", 2D) = "white" {}
+		_MainTex("Texture", 2D) = "white" {}
 	}
-	SubShader
+		SubShader
 	{
 		// No culling or depth
 		Cull Off ZWrite Off ZTest Always
@@ -31,7 +31,7 @@ Shader "Hidden/kode80/PixelRender/PixelOutline"
 			CGPROGRAM
 			#pragma vertex vert
 			#pragma fragment frag
-			
+
 			#include "UnityCG.cginc"
 
 			struct appdata
@@ -46,42 +46,42 @@ Shader "Hidden/kode80/PixelRender/PixelOutline"
 				float4 vertex : SV_POSITION;
 			};
 
-			v2f vert (appdata v)
+			v2f vert(appdata v)
 			{
 				v2f o;
 				o.vertex = UnityObjectToClipPos(v.vertex);
 				o.uv = v.uv;
 				return o;
 			}
-			
+
 			sampler2D _MainTex;
 			sampler2D _CameraDepthTexture;
 			float4 _OutlineColor;
 			float _DepthThreshold;
 
-			fixed4 frag (v2f i) : SV_Target
-			{	
+			fixed4 frag(v2f i) : SV_Target
+			{
 				float2 pixelSize = 1.0 / _ScreenParams.xy;
 				fixed4 output = tex2D(_MainTex, i.uv);
 
 				float a = 0.0;
-				float depth = Linear01Depth( tex2D( _CameraDepthTexture, i.uv).r);
+				float depth = Linear01Depth(tex2D(_CameraDepthTexture, i.uv).r);
 				float2 offsetUV;
 
-				offsetUV = float2( i.uv.x, i.uv.y - pixelSize.y);
-				a += depth - Linear01Depth( tex2D( _CameraDepthTexture, offsetUV).r);
+				offsetUV = float2(i.uv.x, i.uv.y - pixelSize.y);
+				a += depth - Linear01Depth(tex2D(_CameraDepthTexture, offsetUV).r);
 
-				offsetUV = float2( i.uv.x - pixelSize.x, i.uv.y);
-				a += depth - Linear01Depth( tex2D( _CameraDepthTexture, offsetUV).r);
+				offsetUV = float2(i.uv.x - pixelSize.x, i.uv.y);
+				a += depth - Linear01Depth(tex2D(_CameraDepthTexture, offsetUV).r);
 
-				offsetUV = float2( i.uv.x + pixelSize.x, i.uv.y);
-				a += depth - Linear01Depth( tex2D( _CameraDepthTexture, offsetUV).r);
+				offsetUV = float2(i.uv.x + pixelSize.x, i.uv.y);
+				a += depth - Linear01Depth(tex2D(_CameraDepthTexture, offsetUV).r);
 
-				offsetUV = float2( i.uv.x, i.uv.y + pixelSize.y);
-				a += depth - Linear01Depth( tex2D( _CameraDepthTexture, offsetUV).r);
+				offsetUV = float2(i.uv.x, i.uv.y + pixelSize.y);
+				a += depth - Linear01Depth(tex2D(_CameraDepthTexture, offsetUV).r);
 
 				a = float(a < _DepthThreshold);
-				output.rgb = lerp( output.rgb, _OutlineColor.rgb, saturate( a - (1.0 - _OutlineColor.a)));
+				output.rgb = lerp(output.rgb, _OutlineColor.rgb, saturate(a - (1.0 - _OutlineColor.a)));
 
 				return output;
 			}

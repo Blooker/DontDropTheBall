@@ -22,31 +22,25 @@
 //  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using UnityEngine;
-using UnityEditor;
-using System.Collections;
 
-namespace kode80.GUIWrapper
-{
-	public class GUIButton : GUIBase 
-	{
-		private GUIContent _content;
-		public GUIContent content { get { return _content; } }
+namespace kode80.GUIWrapper {
+    public class GUIButton : GUIBase {
+        private GUIContent _content;
+        public GUIContent content { get { return _content; } }
 
-		public GUIButton( GUIContent content, OnGUIAction action=null)
-		{
-			_content = content;
-			if( action != null)
-			{
-				onGUIAction += action;
-			}
-		}
+        public GUIButton(GUIContent content, OnGUIAction action = null) {
+            _content = content;
+            if (action != null)
+            {
+                onGUIAction += action;
+            }
+        }
 
-		protected override void CustomOnGUI ()
-		{
-			if( GUILayout.Button( content))
-			{
-				CallGUIAction();
-			}
-		}
-	}
+        protected override void CustomOnGUI() {
+            if (GUILayout.Button(content))
+            {
+                CallGUIAction();
+            }
+        }
+    }
 }

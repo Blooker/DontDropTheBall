@@ -1,7 +1,4 @@
-﻿    using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
 public class MouseSettings : MonoBehaviour {
 
@@ -23,32 +20,33 @@ public class MouseSettings : MonoBehaviour {
     }
 
     // Use this for initialization
-    void Start () {
+    void Start() {
         SpawnCursor();
     }
-	
-	// Update is called once per frame
-	void Update () {
+
+    // Update is called once per frame
+    void Update() {
         if (mouseSphere == null)
             return;
 
         mouseSphere.transform.position = cursorWorldPos;
     }
 
-    public Vector3 GetCursorWorldPoint () {
+    public Vector3 GetCursorWorldPoint() {
         return cursorWorldPos;
     }
 
-    public void SetCursorPos (Vector2 mousePos, float playerPosZ) {
+    public void SetCursorPos(Vector2 mousePos, float playerPosZ) {
         cursorScreenPos = mousePos;
         CalcCursorWorldPoint();
     }
 
-    void CalcCursorWorldPoint () {
+    void CalcCursorWorldPoint() {
         float resScale = videoSettings.GetInternalResScale();
         Camera cam = playerManager.GetMainPlayerCam();
 
-        if (mouseColOffset == Vector3.zero) {
+        if (mouseColOffset == Vector3.zero)
+        {
             mouseColOffset = mouseCollider.transform.position - cam.transform.position;
         }
 
@@ -56,7 +54,8 @@ public class MouseSettings : MonoBehaviour {
 
         Ray ray = cam.ScreenPointToRay(new Vector3(cursorScreenPos.x * resScale, cursorScreenPos.y * resScale));
         RaycastHit hit = new RaycastHit();
-        if (Physics.Raycast(ray, out hit, Mathf.Infinity, mouseColLayer)) {
+        if (Physics.Raycast(ray, out hit, Mathf.Infinity, mouseColLayer))
+        {
             cursorWorldPos = hit.point;
         }
     }
@@ -66,21 +65,21 @@ public class MouseSettings : MonoBehaviour {
         SetCursorSize();
     }
 
-    public void SetVisible (bool _visible) {
+    public void SetVisible(bool _visible) {
         if (mouseSphere == null)
             return;
 
         mouseSphere.SetActive(_visible);
     }
 
-    void SetCursorSize () {
+    void SetCursorSize() {
         if (mouseSphere == null)
             return;
 
-        mouseSphere.transform.localScale = Vector3.one * (1/videoSettings.GetWindowRes().y) * sphereResScalar;
+        mouseSphere.transform.localScale = Vector3.one * (1 / videoSettings.GetWindowRes().y) * sphereResScalar;
     }
 
-    void SetCursorColor () {
+    void SetCursorColor() {
         if (mouseSphere == null)
             return;
 

@@ -21,42 +21,37 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
 //  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using UnityEngine;
 using UnityEditor;
-using System.Collections;
+using UnityEngine;
 
-namespace kode80.GUIWrapper
-{
-	public class GUITextureField : GUIBase 
-	{
-		public Texture2D texture;
+namespace kode80.GUIWrapper {
+    public class GUITextureField : GUIBase {
+        public Texture2D texture;
 
-		private GUIContent _content;
-		public GUIContent content { get { return _content; } }
+        private GUIContent _content;
+        public GUIContent content { get { return _content; } }
 
-		public GUITextureField( GUIContent content, OnGUIAction action=null, OnGUIPreAction preAction=null)
-		{
-			_content = content;
-			if( preAction != null)
-			{
-				onGUIPreAction += preAction;
-			}
+        public GUITextureField(GUIContent content, OnGUIAction action = null, OnGUIPreAction preAction = null) {
+            _content = content;
+            if (preAction != null)
+            {
+                onGUIPreAction += preAction;
+            }
 
-			if( action != null)
-			{
-				onGUIAction += action;
-			}
-		}
+            if (action != null)
+            {
+                onGUIAction += action;
+            }
+        }
 
-		protected override void CustomOnGUI ()
-		{
-			Texture2D newTexture = EditorGUILayout.ObjectField( _content, texture, typeof( Texture2D), false) as Texture2D;
-			if( newTexture != texture)
-			{
-				CallGUIPreAction();
-				texture = newTexture;
-				CallGUIAction();
-			}
-		}
-	}
+        protected override void CustomOnGUI() {
+            Texture2D newTexture = EditorGUILayout.ObjectField(_content, texture, typeof(Texture2D), false) as Texture2D;
+            if (newTexture != texture)
+            {
+                CallGUIPreAction();
+                texture = newTexture;
+                CallGUIAction();
+            }
+        }
+    }
 }

@@ -22,29 +22,26 @@
 //  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using UnityEngine;
-using System.Collections;
 
-namespace kode80.Utils
-{
-	public class TimeUtil
-	{
-		/// <summary>
-		/// Used to loop animations. Takes a normalized time (0.0 to 1.0) and
-		/// returns the sub normalized time based on number of loops.
-		/// </summary>
-		/// <param name="normalizedTime">Master normalized time (0.0 to 1.0).</param>
-		/// <param name="loopCount">Number of times to loop the animation, 0 means input is unchanged, 1 means '2 plays' etc.</param>
-		/// <param name="pingPong">If set to <c>true</c> every 2nd loop will be reversed.</param>
-		public static float Loop( float normalizedTime, int loopCount, bool pingPong=false)
-		{
-			float loopedTime = normalizedTime * (float)(loopCount + 1);
-			float subTime = loopedTime - Mathf.Floor( loopedTime);
+namespace kode80.Utils {
+    public class TimeUtil {
+        /// <summary>
+        /// Used to loop animations. Takes a normalized time (0.0 to 1.0) and
+        /// returns the sub normalized time based on number of loops.
+        /// </summary>
+        /// <param name="normalizedTime">Master normalized time (0.0 to 1.0).</param>
+        /// <param name="loopCount">Number of times to loop the animation, 0 means input is unchanged, 1 means '2 plays' etc.</param>
+        /// <param name="pingPong">If set to <c>true</c> every 2nd loop will be reversed.</param>
+        public static float Loop(float normalizedTime, int loopCount, bool pingPong = false) {
+            float loopedTime = normalizedTime * (float)(loopCount + 1);
+            float subTime = loopedTime - Mathf.Floor(loopedTime);
 
-			if( pingPong && ((int)loopedTime % 2) == 1) {
-				subTime = 1.0f - subTime;
-			}
+            if (pingPong && ((int)loopedTime % 2) == 1)
+            {
+                subTime = 1.0f - subTime;
+            }
 
-			return subTime;
-		}
-	}
+            return subTime;
+        }
+    }
 }

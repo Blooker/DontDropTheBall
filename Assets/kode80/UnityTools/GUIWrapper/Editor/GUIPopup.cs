@@ -21,52 +21,47 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
 //  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using UnityEngine;
 using UnityEditor;
-using System.Collections;
+using UnityEngine;
 
-namespace kode80.GUIWrapper
-{
-	public class GUIPopup : GUIBase 
-	{
-		public int selectedIndex;
+namespace kode80.GUIWrapper {
+    public class GUIPopup : GUIBase {
+        public int selectedIndex;
 
-		private GUIContent[] _displayedOptions;
-		public GUIContent[] displayedOptions {
-			get { return _displayedOptions; }
-			set {
-				bool valid = value != null && value.Length > 0;
+        private GUIContent[] _displayedOptions;
+        public GUIContent[] displayedOptions {
+            get { return _displayedOptions; }
+            set {
+                bool valid = value != null && value.Length > 0;
 
-				if( valid) { _displayedOptions = value; }
-				else { _displayedOptions = new GUIContent[1] {new GUIContent( "None")}; }
+                if (valid) { _displayedOptions = value; }
+                else { _displayedOptions = new GUIContent[1] { new GUIContent("None") }; }
 
-				selectedIndex = 0;
-			}
-		}
+                selectedIndex = 0;
+            }
+        }
 
-		private GUIContent _content;
-		public GUIContent content { get { return _content; } }
+        private GUIContent _content;
+        public GUIContent content { get { return _content; } }
 
-		public GUIPopup( GUIContent content, GUIContent[] displayedOptions, int selectedIndex=0, OnGUIAction action=null)
-		{
-			this.displayedOptions = displayedOptions;
-			this.selectedIndex = selectedIndex;
-			_content = content;
+        public GUIPopup(GUIContent content, GUIContent[] displayedOptions, int selectedIndex = 0, OnGUIAction action = null) {
+            this.displayedOptions = displayedOptions;
+            this.selectedIndex = selectedIndex;
+            _content = content;
 
-			if( action != null)
-			{
-				onGUIAction += action;
-			}
-		}
+            if (action != null)
+            {
+                onGUIAction += action;
+            }
+        }
 
-		protected override void CustomOnGUI ()
-		{
-			int newIndex = EditorGUILayout.Popup( _content, selectedIndex, displayedOptions);
-			if( newIndex != selectedIndex)
-			{
-				selectedIndex = newIndex;
-				CallGUIAction();
-			}
-		}
-	}
+        protected override void CustomOnGUI() {
+            int newIndex = EditorGUILayout.Popup(_content, selectedIndex, displayedOptions);
+            if (newIndex != selectedIndex)
+            {
+                selectedIndex = newIndex;
+                CallGUIAction();
+            }
+        }
+    }
 }

@@ -21,42 +21,37 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
 //  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using UnityEngine;
 using UnityEditor;
-using System.Collections;
+using UnityEngine;
 
-namespace kode80.GUIWrapper
-{
-	public class GUISlider : GUIBase 
-	{
-		public float value;
-		public float minValue;
-		public float maxValue;
-		
-		private GUIContent _content;
-		public GUIContent content { get { return _content; } }
-		
-		public GUISlider( GUIContent content, float value=0.0f, float minValue=0.0f, float maxValue=1.0f, OnGUIAction action=null)
-		{
-			this.value = value;
-			this.minValue = minValue;
-			this.maxValue = maxValue;
+namespace kode80.GUIWrapper {
+    public class GUISlider : GUIBase {
+        public float value;
+        public float minValue;
+        public float maxValue;
 
-			_content = content;
-			if( action != null)
-			{
-				onGUIAction += action;
-			}
-		}
-		
-		protected override void CustomOnGUI ()
-		{
-			float newValue = EditorGUILayout.Slider( _content, value, minValue, maxValue);
-			if( newValue != value)
-			{
-				value = newValue;
-				CallGUIAction();
-			}
-		}
-	}
+        private GUIContent _content;
+        public GUIContent content { get { return _content; } }
+
+        public GUISlider(GUIContent content, float value = 0.0f, float minValue = 0.0f, float maxValue = 1.0f, OnGUIAction action = null) {
+            this.value = value;
+            this.minValue = minValue;
+            this.maxValue = maxValue;
+
+            _content = content;
+            if (action != null)
+            {
+                onGUIAction += action;
+            }
+        }
+
+        protected override void CustomOnGUI() {
+            float newValue = EditorGUILayout.Slider(_content, value, minValue, maxValue);
+            if (newValue != value)
+            {
+                value = newValue;
+                CallGUIAction();
+            }
+        }
+    }
 }

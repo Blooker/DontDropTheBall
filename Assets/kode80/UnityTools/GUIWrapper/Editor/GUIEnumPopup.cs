@@ -21,38 +21,33 @@
 //  (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, 
 //  EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-using UnityEngine;
 using UnityEditor;
-using System.Collections;
+using UnityEngine;
 
-namespace kode80.GUIWrapper
-{
-	public class GUIEnumPopup : GUIBase 
-	{
-		public System.Enum value;
+namespace kode80.GUIWrapper {
+    public class GUIEnumPopup : GUIBase {
+        public System.Enum value;
 
-		private GUIContent _content;
-		public GUIContent content { get { return _content; } }
+        private GUIContent _content;
+        public GUIContent content { get { return _content; } }
 
-		public GUIEnumPopup( GUIContent content, System.Enum value, OnGUIAction action=null)
-		{
-			this.value = value;
+        public GUIEnumPopup(GUIContent content, System.Enum value, OnGUIAction action = null) {
+            this.value = value;
 
-			_content = content;
-			if( action != null)
-			{
-				onGUIAction += action;
-			}
-		}
+            _content = content;
+            if (action != null)
+            {
+                onGUIAction += action;
+            }
+        }
 
-		protected override void CustomOnGUI ()
-		{
-			System.Enum newValue = EditorGUILayout.EnumPopup( _content, value);
-			if( newValue != value)
-			{
-				value = newValue;
-				CallGUIAction();
-			}
-		}
-	}
+        protected override void CustomOnGUI() {
+            System.Enum newValue = EditorGUILayout.EnumPopup(_content, value);
+            if (newValue != value)
+            {
+                value = newValue;
+                CallGUIAction();
+            }
+        }
+    }
 }

@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class EntityManager : MonoBehaviour {
 
@@ -32,7 +30,8 @@ public class EntityManager : MonoBehaviour {
         if (player == null)
             return;
 
-        if (player.transform.position.y < -15.4) {
+        if (player.transform.position.y < -15.4)
+        {
             RespawnPlayer();
         }
 
@@ -40,19 +39,21 @@ public class EntityManager : MonoBehaviour {
         if (ball == null)
             return;
 
-        if (ball.transform.position.y < -15.4) {
+        if (ball.transform.position.y < -15.4)
+        {
             RespawnBall();
         }
 
         if (playerColl != null && ballColl != null)
             Physics2D.IgnoreCollision(playerColl, ballColl);
 
-        if (!ballRefSet) {
+        if (!ballRefSet)
+        {
             player.SetBall(ball);
         }
     }
 
-    public Camera GetMainPlayerCam () {
+    public Camera GetMainPlayerCam() {
         return playerCam.GetMainCam();
     }
 
@@ -63,7 +64,7 @@ public class EntityManager : MonoBehaviour {
     // Kills the player if they exist, then instantiates a new one
     public void RespawnPlayer() {
         if (player != null)
-            DestroyPlayer ();
+            DestroyPlayer();
 
         player = Instantiate(playerPfb, playerStartPos, Quaternion.identity).GetComponent<PlayerController>();
         playerColl = player.GetComponent<Collider2D>();
@@ -72,7 +73,7 @@ public class EntityManager : MonoBehaviour {
     }
 
     // Destroys player and safely removes all references to it
-    public void DestroyPlayer () {
+    public void DestroyPlayer() {
         playerColl = null;
         ballRefSet = false;
 
@@ -90,7 +91,7 @@ public class EntityManager : MonoBehaviour {
     }
 
     // Destroys player and safely removes all references to it
-    public void DestroyBall () {
+    public void DestroyBall() {
         ballColl = null;
         ballRefSet = false;
 
