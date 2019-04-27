@@ -28,8 +28,8 @@ public class BallController : MonoBehaviour {
             lastVel = rb.velocity;
         }
     }
-
-    public void Hit(Vector2 dir, float force) {
+    
+    public void Hit (Vector2 dir, float force) {
         RaycastHit2D[] hits = new RaycastHit2D[1];
         if (Physics2D.CircleCast(transform.position, transform.localScale.x / 2f, dir, bounceFilter, hits, restHitCheckDist) > 0)
         {
